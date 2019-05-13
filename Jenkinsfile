@@ -44,18 +44,32 @@ spec:
       }
     }
 
-    stage('Deploy') {
+    stage('Deploy Canary') {
       environment {
         GIT_CREDS = credentials('git')
+        ARGOCD_TOKEN = credentials('argocd-token')
+        ARGOCD_OPTS = "--auth-token $ARGOCD_TOKEN --server cd.apps.argoproj.io --grpc-web"
+        USER = 'argocd'
       }
       steps {
         container('tools') {
-          sh "git clone https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/alexmt/rollouts-demo-deploy.git"
+          sh "git clone https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/alexmt/rollouts-demo-deployment.git"
           sh "git config --global user.email 'ci@ci.com'"
 
-          dir("rollouts-demo-deploy") {
+          dir("rollouts-demo-deployment") {
+            sh "curl https://cd.apps.argoproj.io/download/argocd-linux-amd64 > ./argocd && chmod +x ./argocd"
+
+            // Push changes to deployment repo
             sh "cd canary && kustomize edit set image alexmt/rollouts-demo:${env.GIT_COMMIT}"
             sh "git commit -am 'Publish new version' && git push || echo 'no changes'"
+
+            // Trigger app syncronization and make sure first canary step is completed
+            sh "./argocd app sync rollouts-demo && ./argocd app wait rollouts-demo --suspended"
+
+            input message:'Approve deployment?'
+
+            // Trigger app syncronization and make sure first canary step is completed
+            sh "./argocd app actions run rollouts-demo resume --kind Rollout"
           }
         }
       }
