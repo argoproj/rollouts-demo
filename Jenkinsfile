@@ -56,7 +56,7 @@ spec:
           // Prepare tools: configure git and download argocd cli
           sh "git clone https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/alexmt/rollouts-demo-deployment.git"
           sh "git config --global user.email 'ci@ci.com'"
-          sh "curl https://cd.apps.argoproj.io/download/argocd-linux-amd64 > ./rollouts-demo-deployment/argocd && chmod +x ./argocd"
+          sh "curl https://cd.apps.argoproj.io/download/argocd-linux-amd64 > ./rollouts-demo-deployment/argocd && chmod +x ./rollouts-demo-deployment/argocd"
 
           dir("rollouts-demo-deployment") {
             // Push changes to deployment repo
