@@ -53,20 +53,21 @@ spec:
       }
       steps {
         container('tools') {
+          // Prepare tools: configure git and download argocd cli
+          sh "curl https://cd.apps.argoproj.io/download/argocd-linux-amd64 > ./rollouts-demo-deployment/argocd && chmod +x ./argocd"
           sh "git clone https://$GIT_CREDS_USR:$GIT_CREDS_PSW@github.com/alexmt/rollouts-demo-deployment.git"
           sh "git config --global user.email 'ci@ci.com'"
 
           dir("rollouts-demo-deployment") {
-            sh "curl https://cd.apps.argoproj.io/download/argocd-linux-amd64 > ./argocd && chmod +x ./argocd"
-
             // Push changes to deployment repo
-            sh "cd canary && kustomize edit set image alexmt/rollouts-demo:${env.GIT_COMMIT}"
+            sh "kustomize edit set image alexmt/rollouts-demo:${env.GIT_COMMIT}"
             sh "git commit -am 'Publish new version' && git push || echo 'no changes'"
 
             // Trigger app syncronization and make sure first canary step is completed
             sh "./argocd app sync rollouts-demo && ./argocd app wait rollouts-demo --suspended"
 
-            input message:'Approve deployment?'
+            // Verify canary and confirm promoting it.
+            input message:'Promote canary?'
 
             // Trigger app syncronization and make sure first canary step is completed
             sh "./argocd app actions run rollouts-demo resume --kind Rollout"
