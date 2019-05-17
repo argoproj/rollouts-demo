@@ -63,8 +63,8 @@ spec:
             sh "kustomize edit set image alexmt/rollouts-demo:${env.GIT_COMMIT}"
             sh "git commit -am 'Publish new version' && git push || echo 'no changes'"
 
-            // Trigger app syncronization and make sure first canary step is completed
-            sh "./argocd app sync rollouts-demo && ./argocd app wait rollouts-demo --suspended"
+            // Wait until first canary step is completed
+            sh "argocd app wait rollouts-demo --suspended --sync"
 
             // Verify canary and confirm promoting it.
             input message:'Promote canary?'
