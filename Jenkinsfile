@@ -64,7 +64,7 @@ spec:
             sh "git commit -am 'Publish new version' && git push || echo 'no changes'"
 
             // Wait until first canary step is completed
-            sh "argocd app wait rollouts-demo --suspended --sync"
+            sh "./argocd app wait rollouts-demo --suspended --sync"
 
             // Verify canary and confirm promoting it.
             input message:'Promote canary?'
