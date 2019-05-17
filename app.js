@@ -39,7 +39,7 @@ class Chart {
 
     tick(duration) {
         this.sinceLastBar += duration;
-        if (this.sinceLastBar > 1) {
+        if (this.sinceLastBar > 3) {
             this.sinceLastBar = 0;
             const total = Array.from(this.nextBarInfo.values()).reduce(function(first, second) {
                 return first + second;
