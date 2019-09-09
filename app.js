@@ -82,15 +82,31 @@ class Chart {
     }
 }
 
+function handleErrors(response) {
+    if (!response.ok) {
+        throw Error(response.statusText);
+    }
+    return response;
+}
+
 export class App {
     constructor(canvas) {
         this.canvas = canvas;
         this.particles = [];
         this.chart = new Chart(this);
+        this.sliders = new Sliders(this)
     }
 
+
+    
+
     addParticle() {
-        fetch('./color.json').then(function(res) {
+        
+        fetch('./color', {
+            method: "POST",
+            body: JSON.stringify(this.sliders.GetValues()),
+        }).then(handleErrors)
+        .then(function(res) {
             return res.json();
         }).then((function(color) {
             this.particles.unshift(new Particle(this.canvas.width / 2, this.canvas.height * 0.2, color));
@@ -123,4 +139,37 @@ export class App {
         setInterval(this.addParticle.bind(this), 100);
         draw();
     }
+}
+
+export class Sliders {
+    constructor(app) {
+        this.app = app;
+        this.return502 = document.getElementById("return502");
+        this.return404 = document.getElementById("return404");
+        this.delayPecent = document.getElementById("delayPecent");
+        this.delayLength = document.getElementById("delayLength");
+
+    }
+
+    draw(context) {
+        context.shadowBlur=0;
+        context.shadowColor='none';
+        const height = 600;
+        const width = 300;
+        const xoffset = 50;
+        const yoffset = 50;
+
+        const xStart = this.app.canvas.width - width - xoffset;
+        context.fillRect(xStart, yoffset, xStart + width, height + yoffset);
+    }
+
+    GetValues() {
+        return {
+            "return502": parseInt(this.return502.value),
+            "return404": parseInt(this.return404.value),
+            "delayPecent": parseInt(this.delayPecent.value),
+            "delayLength": parseInt(this.delayLength.value)
+        }
+    }
+
 }
