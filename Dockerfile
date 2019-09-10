@@ -1,5 +1,17 @@
-FROM nginx:1.15.12
+FROM golang:1.13 as build
+WORKDIR /go/src/app
+COPY . .
+RUN make
 
-ADD . /app
+FROM scratch
+COPY *.html ./
+COPY *.png ./
+COPY *.js ./
+COPY *.ico ./
+COPY *.css ./
+COPY --from=build /go/src/app/rollouts-demo /rollouts-demo
 
-ENTRYPOINT [ "nginx", "-g", "daemon off;", "-c", "/app/nginx.conf" ]
+ARG COLOR
+ENV COLOR=${COLOR}
+
+ENTRYPOINT [ "/rollouts-demo" ]

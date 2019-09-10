@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- bluegreen-rollout.yaml
+- bluegreen-service.yaml
+- bluegreen-ingress.yaml
+- bluegreen-preview-service.yaml
+- bluegreen-preview-ingress.yaml

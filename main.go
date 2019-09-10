@@ -6,14 +6,24 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
-	// "github.com/gorilla/handlers"
-	// "github.com/gorilla/mux"
+)
+
+var (
+	color  = os.Getenv("COLOR")
+	colors = []string{
+		"red",
+		"orange",
+		"yellow",
+		"green",
+		"blue",
+		"purple",
+	}
 )
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	// http.Handle("/statics/", http.StripPrefix(strings.TrimRight("/statics/", "/"), http.FileServer(http.Dir("./"))))
 	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
 	http.HandleFunc("/color", getColor)
 	http.ListenAndServe(":8080", nil)
@@ -48,7 +58,14 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 	} else if newRequest.Return404Probablility != nil && *newRequest.Return404Probablility >= rand.Intn(100) {
 		w.WriteHeader(404)
 	}
+	switch color {
+	case "":
+		fmt.Fprintf(w, "\"%s\"", randomColor())
+	default:
+		fmt.Fprintf(w, "\"%s\"", color)
+	}
+}
 
-	color, _ := ioutil.ReadFile("color.json")
-	fmt.Fprintf(w, "%s", string(color))
+func randomColor() string {
+	return colors[rand.Int()%len(colors)]
 }

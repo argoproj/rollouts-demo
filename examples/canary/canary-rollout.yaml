@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: canary-demo
+  labels:
+    app: canary-demo
+spec:
+  replicas: 5
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: canary-demo
+  template:
+    metadata:
+      labels:
+        app: canary-demo
+    spec:
+      containers:
+      - name: canary-demo
+        image: argoproj/rollouts-demo:blue
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
+        # This preStop sleep prevents the pod from exiting immediately upon a pod termination
+        # event (e.g. during a rolling update). This gives some time for ingress controllers to
+        # react to the Pod IP being removed from the Service's Endpoint list, preventing traffic
+        # from being directed to the terminating pods, which otherwise would cause timeout errors
+        # and/or request delays.
+        # See: https://github.com/kubernetes/ingress-nginx/issues/3335#issuecomment-434970950
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sleep", "5"]
+  strategy:
+    canary:
+      canaryService: canary-demo-preview
+      steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}

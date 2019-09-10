@@ -1,21 +1,22 @@
-# Canary deployment using Argo Rollouts
+# Argo Rollouts Demo Application
 
-Repository demonstrates implementation of Canary deployment using Argo Rollouts and Jenkins pipeline. Demo includes sample application, Jenkins pipeline and 
-[deployment manifests](https://github.com/alexmt/rollouts-demo-deployment).
+This application demonstrates implementation of various deployment strategies using Argo Rollouts. Demo includes a
+sample application and example rollout manifests which demonstrates various Argo Rollouts features.
 
-Steps:
+Instructions using Argo CD:
 
-1. Create the Argo CD application using deployment repo https://github.com/alexmt/rollouts-demo-deployment: 
+1. Create the Argo CD application using one of the examples:
 
 ```
-argocd app create rollouts-demo --repo https://github.com/alexmt/rollouts-demo-deployment --path . --dest-server https://kubernetes.default.svc --dest-namespace rollouts-demo --sync-policy automated
+argocd app create rollouts-demo \
+  --repo https://github.com/argoproj/rollouts-demo \
+  --path examples/canary \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace rollouts-demo
 ```
 
-2. Make sure application is running by visiting http://rollouts-demo.apps.argoproj.io/.
-3. Register pipeline in your Jenkins instance and make a "code" change: update color defined in [color.json](./color.json), commit the change and push it to origin.
-4. Navigate to Jenkins and make sure Pipeline reaches confirmation step:
+2. Visit app at http://rollouts-demo.apps.argoproj.io
 
 ![img](./demo.png)
 
-5. Check application URL: http://rollouts-demo.apps.argoproj.io/ . It should be serving both production and canary responses.
-6. Confirm canary promotion in jenkins. Go to step 4 and repeat.
+3. Upgrade app by changing image tag to another color and resyncing app
