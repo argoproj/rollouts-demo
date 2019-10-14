@@ -11,16 +11,18 @@
     <img class="logo" src="./logo.png"/>
 
     <div class="textbox">
+        <h3 id="currentColor" style="text-align: center">Color<h3>
         <label>502 percentage</label>
-        <input type="range" min="0" max="100" value="0" class="slider" id="return502" oninput="output502.value = return502.value + '%'">
+        <input type="range" min="0" max="100" value="0" class="slider" id="return502" onchange="output502.value = return502.value + '%'">
         <output name="output502" id="output502">0%</output>
         <p>404 percentage</p>
-        <input type="range" min="0" max="100" value="0" class="slider" id="return404" oninput="output404.value = return404.value + '%'">
+        <input type="range" min="0" max="100" value="0" class="slider" id="return404" onchange="output404.value = return404.value + '%'">
         <output name="output404" id="output404">0%</output>
         <p>Delayed Responses</pp>
-        <input type="range" min="1" max="100" value="0" class="slider" id="delayPecent" oninput="delayPecentText.value = delayPecent.value + '%'">
-        <output name="delayPecentText" id="delayPecentText">0%</output>
+        <input type="range" min="1" max="100" value="0" class="slider" id="delayPercent" onchange="delayPercentText.value = delayPercent.value + '%'">
+        <output name="delayPercentText" id="delayPercentText">0%</output>
         <input type="text" value="0" id="delayLength">
+        <div id="availableColors"></div>
     </div>
 </body>
 <script type="module">

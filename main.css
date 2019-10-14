@@ -20,6 +20,26 @@ html, body {
     right: 3em;
     background: whitesmoke
 }
+
+.currentColor{
+  text-align: center
+}
+
+.availableColors {
+  display:table;
+}
+
+.square {
+  width: 40px;
+  float:left;
+  height: 40px;
+  background: red;
+  border-width: 4px;
+  border-color: #000;
+  border-style: hidden;
+  margin:5px;
+  box-sizing:border-box;
+}
   
   /* The slider itself */
   .slider {

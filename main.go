@@ -29,9 +29,10 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-type request struct {
-	DelayProbability *int `json:"delayPercent,omitempty"`
-	DelayLength      int  `json:"delayLength,omitempty"`
+type colorParameters struct {
+	Color            string `json:"color"`
+	DelayProbability *int   `json:"delayPercent,omitempty"`
+	DelayLength      int    `json:"delayLength,omitempty"`
 
 	Return502Probablility *int `json:"return502,omitempty"`
 	Return404Probablility *int `json:"return404,omitempty"`
@@ -43,26 +44,56 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(502)
 		return
 	}
-	newRequest := request{}
-	err = json.Unmarshal(requestBody, &newRequest)
+	//The frontend has stored no values
+	if string(requestBody) == `"[]"` {
+		printColor(color, w)
+		return
+	}
+	request := []colorParameters{}
+	err = json.Unmarshal(requestBody, &request)
 	if err != nil {
 		w.WriteHeader(502)
 		return
-	}
-	if newRequest.DelayProbability != nil && *newRequest.DelayProbability >= rand.Intn(100) {
-		time.Sleep(time.Duration(newRequest.DelayLength) * time.Second)
+
 	}
 
-	if newRequest.Return502Probablility != nil && *newRequest.Return502Probablility >= rand.Intn(100) {
+	colorToReturn := randomColor()
+	if color != "" {
+		colorToReturn = color
+	}
+
+	var colorParams colorParameters
+	for i := range request {
+		cp := request[i]
+		if cp.Color == colorToReturn {
+			colorParams = cp
+		}
+	}
+
+	if colorParams.DelayProbability != nil && *colorParams.DelayProbability >= rand.Intn(100) {
+		fmt.Println("Delaying request")
+		time.Sleep(time.Duration(colorParams.DelayLength) * time.Second)
+	}
+
+	if colorParams.Return502Probablility != nil && *colorParams.Return502Probablility >= rand.Intn(100) {
+		fmt.Println("Returning 502")
 		w.WriteHeader(502)
-	} else if newRequest.Return404Probablility != nil && *newRequest.Return404Probablility >= rand.Intn(100) {
+	} else if colorParams.Return404Probablility != nil && *colorParams.Return404Probablility >= rand.Intn(100) {
+		fmt.Println("Returning 404")
 		w.WriteHeader(404)
 	}
-	switch color {
+	printColor(colorToReturn, w)
+}
+
+func printColor(colorToPrint string, w http.ResponseWriter) {
+	switch colorToPrint {
 	case "":
-		fmt.Fprintf(w, "\"%s\"", randomColor())
+		randomColor := randomColor()
+		fmt.Printf("Successful %s\n", randomColor)
+		fmt.Fprintf(w, "\"%s\"", randomColor)
 	default:
-		fmt.Fprintf(w, "\"%s\"", color)
+		fmt.Printf("Successful %s\n", colorToPrint)
+		fmt.Fprintf(w, "\"%s\"", colorToPrint)
 	}
 }
 

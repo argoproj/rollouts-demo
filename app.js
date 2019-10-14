@@ -112,6 +112,7 @@ export class App {
             this.particles.unshift(new Particle(this.canvas.width / 2, this.canvas.height * 0.2, color));
             this.particles = this.particles.slice(0, 50);
             this.chart.addColor(color);
+            this.sliders.addColor(color)
         }).bind(this));
     }
 
@@ -141,14 +142,85 @@ export class App {
     }
 }
 
+export class Color {
+    constructor(color) {
+        this.color = color;
+        this.isSelected = false;
+
+        this.return502 = 0;
+        this.return404 = 0;
+        this.delayPercent = 0;
+        this.delayLength = 0;
+
+
+        this.square = document.createElement('div');
+        this.square.className = "square " + color;
+        this.square.style["background"] = color
+        this.square.shadowBlur=0;
+    }
+    setIsSelected(isSelected) {
+        this.isSelected = isSelected
+        if (isSelected) {
+            this.square.style["borderStyle"] = "solid";
+        } else {
+            this.square.style["borderStyle"] = "hidden";
+        }
+    }
+
+    setSliderValues(updatedValues) {
+        this.return502 = updatedValues;
+        this.return404 = updatedValues;
+        this.delayPercent = updatedValues;
+        this.delayLength = 0;
+    }
+
+    GetSliderValues() {
+        return {
+            "color": this.color,
+            "return502": parseInt(this.return502),
+            "return404": parseInt(this.return404),
+            "delayPercent": parseInt(this.delayPercent),
+            "delayLength": parseInt(this.delayLength)
+        }
+    }
+}
+
+const capitalize = (s) => {
+    if (typeof s !== 'string') return ''
+    return s.charAt(0).toUpperCase() + s.slice(1)
+  }
+
 export class Sliders {
     constructor(app) {
         this.app = app;
-        this.return502 = document.getElementById("return502");
-        this.return404 = document.getElementById("return404");
-        this.delayPecent = document.getElementById("delayPecent");
-        this.delayLength = document.getElementById("delayLength");
 
+        this.return502 = document.getElementById("return502");
+        this.return502.addEventListener("input", this.updateColor.bind(this))
+        
+        this.return404 = document.getElementById("return404");
+        this.return404.addEventListener("input", this.updateColor.bind(this))
+        
+        this.delayPercent = document.getElementById("delayPercent");
+        this.delayPercent.addEventListener("input", this.updateColor.bind(this))
+        
+        this.delayLength = document.getElementById("delayLength");
+        this.delayLength.addEventListener("input", this.updateColor.bind(this))
+
+        
+        
+        //TODO: cycle through colorSwitcher instead of having seperate storage
+        this.availableColors = []
+        this.colorSwitcher = document.getElementById("availableColors")
+        this.currentColorLabel = document.getElementById("currentColor");
+        this.currentColor = null
+
+    }
+
+    updateColor() {
+        this.currentColor.return502 = this.return502.value;
+        this.currentColor.return404 = this.return404.value;
+        this.currentColor.delayPercent =this.delayPercent.value;
+        this.currentColor.delayLength = this.delayLength.value;
     }
 
     draw(context) {
@@ -162,14 +234,61 @@ export class Sliders {
         const xStart = this.app.canvas.width - width - xoffset;
         context.fillRect(xStart, yoffset, xStart + width, height + yoffset);
     }
-
-    GetValues() {
-        return {
-            "return502": parseInt(this.return502.value),
-            "return404": parseInt(this.return404.value),
-            "delayPecent": parseInt(this.delayPecent.value),
-            "delayLength": parseInt(this.delayLength.value)
+    addColor(color) {
+        newColor = true
+        this.availableColors.forEach((storedColor)=> {
+            if (color == storedColor.color) {
+                newColor = false
+            }
+        })
+        if (!newColor) {
+            return
         }
+ 
+        var newColor = new Color(color)
+
+        var isSelected = false
+        if (this.currentColor == null) {
+            this.currentColor = newColor
+            this.currentColorLabel.innerText = capitalize(newColor.color)
+            isSelected = true
+        }
+        newColor.setIsSelected(isSelected)
+
+        newColor.square.addEventListener("click", this.setCurrentColor(newColor).bind(this))
+        
+        this.availableColors.push(newColor)
+        this.colorSwitcher.appendChild(newColor.square)
+
+        console.log(this.availableColors)
+
+    }
+    
+    setCurrentColor(newColor) {
+        return function() {
+            this.currentColor.setIsSelected(false)
+            this.currentColor = newColor
+            this.currentColorLabel.innerText = capitalize(newColor.color)
+            this.currentColor.setIsSelected(true)
+            this.SetSliders(newColor)
+        }.bind(this)
     }
 
+    SetSliders(color) {
+        this.return502.value = color.return502
+        this.return404.value = color.return404
+        this.delayPercent.value = color.delayPercent
+        this.delayLength.value = color.delayLength
+    }
+
+    GetValues() {
+        if (this.availableColors.length == 0) {
+            return "[]"
+        }
+        var values = []
+        this.availableColors.forEach((color)=> {
+            values.push(color.GetSliderValues())
+        })
+        return values
+    }
 }
