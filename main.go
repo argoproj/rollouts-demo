@@ -1,13 +1,28 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
+)
+
+const (
+	// defaultTerminationDelay delays termination of the program in a graceful shutdown situation.
+	// We do this to prevent the pod from exiting immediately upon a pod termination event
+	// (e.g. during a rolling update). This gives some time for ingress controllers to react to
+	// the Pod IP being removed from the Service's Endpoint list, which prevents traffic from being
+	// directed to terminated pods, which otherwise would cause timeout errors and/or request delays.
+	// See: See: https://github.com/kubernetes/ingress-nginx/issues/3335#issuecomment-434970950
+	defaultTerminationDelay = 10
 )
 
 var (
@@ -23,10 +38,56 @@ var (
 )
 
 func main() {
+	var (
+		listenAddr       string
+		terminationDelay int
+	)
+	flag.StringVar(&listenAddr, "listen-addr", ":8080", "server listen address")
+	flag.IntVar(&terminationDelay, "termination-delay", defaultTerminationDelay, "termination delay in seconds")
+	flag.Parse()
+
 	rand.Seed(time.Now().UnixNano())
-	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
-	http.HandleFunc("/color", getColor)
-	http.ListenAndServe(":8080", nil)
+
+	router := http.NewServeMux()
+	router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
+	router.HandleFunc("/color", getColor)
+
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
+
+	done := make(chan bool)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		sig := <-quit
+		server.SetKeepAlivesEnabled(false)
+		log.Printf("Signal %v caught. Shutting down in %vs", sig, terminationDelay)
+		delay := time.NewTicker(time.Duration(terminationDelay) * time.Second)
+		defer delay.Stop()
+		select {
+		case <-quit:
+			log.Println("Second signal caught. Shutting down NOW")
+		case <-delay.C:
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if err := server.Shutdown(ctx); err != nil {
+			log.Fatalf("Could not gracefully shutdown the server: %v\n", err)
+		}
+		close(done)
+	}()
+
+	log.Printf("Started server on %s", listenAddr)
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("Could not listen on %s: %v\n", listenAddr, err)
+	}
+
+	<-done
+	log.Println("Server stopped")
 }
 
 type colorParameters struct {
@@ -54,7 +115,6 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(502)
 		return
-
 	}
 
 	colorToReturn := randomColor()
@@ -71,28 +131,33 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if colorParams.DelayProbability != nil && *colorParams.DelayProbability >= rand.Intn(100) {
-		fmt.Println("Delaying request")
+		log.Printf("Delaying request %ds", colorParams.DelayLength)
 		time.Sleep(time.Duration(colorParams.DelayLength) * time.Second)
 	}
 
 	if colorParams.Return502Probablility != nil && *colorParams.Return502Probablility >= rand.Intn(100) {
-		fmt.Println("Returning 502")
+		log.Println("Returning 502")
 		w.WriteHeader(502)
 	} else if colorParams.Return404Probablility != nil && *colorParams.Return404Probablility >= rand.Intn(100) {
-		fmt.Println("Returning 404")
+		log.Println("Returning 404")
 		w.WriteHeader(404)
+	} else {
+		printColor(colorToReturn, w)
 	}
-	printColor(colorToReturn, w)
+
 }
 
 func printColor(colorToPrint string, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(http.StatusOK)
 	switch colorToPrint {
 	case "":
 		randomColor := randomColor()
-		fmt.Printf("Successful %s\n", randomColor)
+		log.Printf("Successful %s\n", randomColor)
 		fmt.Fprintf(w, "\"%s\"", randomColor)
 	default:
-		fmt.Printf("Successful %s\n", colorToPrint)
+		log.Printf("Successful %s\n", colorToPrint)
 		fmt.Fprintf(w, "\"%s\"", colorToPrint)
 	}
 }

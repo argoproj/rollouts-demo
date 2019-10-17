@@ -27,16 +27,6 @@ spec:
           requests:
             memory: 32Mi
             cpu: 5m
-        # This preStop sleep prevents the pod from exiting immediately upon a pod termination
-        # event (e.g. during a rolling update). This gives some time for ingress controllers to
-        # react to the Pod IP being removed from the Service's Endpoint list, preventing traffic
-        # from being directed to the terminating pods, which otherwise would cause timeout errors
-        # and/or request delays.
-        # See: https://github.com/kubernetes/ingress-nginx/issues/3335#issuecomment-434970950
-        lifecycle:
-          preStop:
-            exec:
-              command: ["sleep", "5"]
   strategy:
     canary:
       canaryService: canary-demo-preview
