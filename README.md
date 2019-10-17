@@ -20,3 +20,12 @@ argocd app create rollouts-demo \
 ![img](./demo.png)
 
 3. Upgrade app by changing image tag to another color and resyncing app
+
+
+## Releasing
+
+To release new images:
+
+```bash
+make release IMAGE_NAMESPACE=argoproj DOCKER_PUSH=true
+```
