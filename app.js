@@ -1,17 +1,28 @@
 class Particle {
-    constructor(x, y, color) {
+    constructor(x, y, color, statusCode, responseTime) {
+        this.statusCode = statusCode
         this.color = color;
+        if (this.statusCode == 502) {
+            this.color = "dark" + color;
+        }
         this.x = x;
         this.y = y;
+
         this.size = Math.random() * 20 + 10;
-        this.vx = Math.random() * 400 - 200;
-        this.vy = Math.random() * 400 - 200;
+        this.maxSpeeed = 600
+        this.maxSlowDown = 400
+        this.maxDelay = 5000
+        this.vx = this.maxSpeeed - (this.maxSlowDown * responseTime/this.maxDelay)
+        if (responseTime > this.maxDelay) {
+            this.vx = this.maxSpeeed - this.maxSlowDown
+        }
+        console.log(responseTime)
+        this.vy = 0;
     }
 
     tick(duration) {
         this.x += this.vx * duration;
         this.y += this.vy * duration;
-        this.vy += 50 * duration;
     }
 
     draw(context) {
@@ -31,24 +42,39 @@ class Chart {
         this.sinceLastBar = 0;
         this.bars = [];
         this.nextBarInfo = new Map();
+        this.height = 200
+        this.width = 50;
+
     }
 
-    addColor(color) {
-        this.nextBarInfo.set(color, (this.nextBarInfo.get(color) || 0) + 1);
+    addColor(color, statusCode) {
+        var stats = this.nextBarInfo.get(color)
+        if (stats == null) {
+            stats = {
+                total: 0,
+                200: 0,
+                502: 0
+            }
+        }
+        stats.total = stats.total + 1
+        stats[statusCode] = stats[statusCode] + 1
+        this.nextBarInfo.set(color, stats);
     }
 
     tick(duration) {
         this.sinceLastBar += duration;
         if (this.sinceLastBar > 3) {
             this.sinceLastBar = 0;
-            const total = Array.from(this.nextBarInfo.values()).reduce(function(first, second) {
+            const total = Array.from(this.nextBarInfo.values(), x => x.total).reduce(function(first, second) {
                 return first + second;
             }, 0);
             if (total > 0) {
                 const nextBar = Array.from(this.nextBarInfo.entries()).map(function([color, count]) {
                     return {
                         color,
-                        percentage: count / total,
+                        percentage: count.total / total,
+                        200:  count[200] / total,
+                        502:  count[502] / total,
                     };
                 }.bind(this)).sort(function(first, second) {
                     return first.color.localeCompare(second.color);
@@ -65,16 +91,22 @@ class Chart {
     draw(context) {
         context.shadowBlur=0;
         context.shadowColor='none';
-        const height = 200;
-        const width = 50;
+        const height = this.height;
+        const width = this.width;
         const distance = 20;
         const count = this.app.canvas.width / (width + distance);
         const start = Math.max(0, this.bars.length - count);
         this.bars.slice(start).forEach((function(bar, i) {
             let offset = 0;
             bar.forEach((function(part) {
+                if (part[502] > 0) {
+                    context.fillStyle = "dark" + part.color;
+                    const partHeight = height * part[502];
+                    context.fillRect(distance * i + width * i, this.app.canvas.height - (partHeight + offset), width, partHeight);
+                    offset += partHeight;
+                }
                 context.fillStyle = part.color;
-                const partHeight = height * part.percentage;
+                const partHeight = height * part[200];
                 context.fillRect(distance * i + width * i, this.app.canvas.height - (partHeight + offset), width, partHeight);
                 offset += partHeight;
             }).bind(this));
@@ -82,12 +114,8 @@ class Chart {
     }
 }
 
-function handleErrors(response) {
-    if (!response.ok) {
-        throw Error(response.statusText);
-    }
-    return response;
-}
+let ParticleMaxSize=30
+let ArgoImageSize=250
 
 export class App {
     constructor(canvas) {
@@ -101,18 +129,21 @@ export class App {
     
 
     addParticle() {
-        
+        var sendTime = (new Date()).getTime();
         fetch('./color', {
             method: "POST",
             body: JSON.stringify(this.sliders.GetValues()),
-        }).then(handleErrors)
+        })
         .then(function(res) {
-            return res.json();
-        }).then((function(color) {
-            this.particles.unshift(new Particle(this.canvas.width / 2, this.canvas.height * 0.2, color));
-            this.particles = this.particles.slice(0, 50);
-            this.chart.addColor(color);
-            this.sliders.addColor(color)
+           return res.json().then(color => ({ color, res }))
+        }).then((function(res) {
+            var receiveTime = (new Date()).getTime();
+            var responseTimeMs = receiveTime - sendTime;
+            let startingY = (this.canvas.height - this.chart.height - ParticleMaxSize - ArgoImageSize) * Math.random() + ArgoImageSize
+            this.particles.unshift(new Particle(0, startingY, res.color, res.res.status, responseTimeMs));
+            this.particles = this.particles.slice(0, 200);
+            this.chart.addColor(res.color, res.res.status);
+            this.sliders.addColor(res.color)
         }).bind(this));
     }
 
@@ -193,6 +224,7 @@ export class Sliders {
 
         this.return502 = document.getElementById("return502");
         this.return502.addEventListener("input", this.updateColor.bind(this))
+    
         
         this.delayPercent = document.getElementById("delayPercent");
         this.delayPercent.addEventListener("input", this.updateColor.bind(this))
