@@ -106,7 +106,7 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 	}
 	//The frontend has stored no values
 	if string(requestBody) == `"[]"` {
-		printColor(color, w)
+		printColor(color, w, true)
 		return
 	}
 	request := []colorParameters{}
@@ -129,30 +129,43 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if colorParams.DelayProbability != nil && *colorParams.DelayProbability >= rand.Intn(100) {
+	if colorParams.DelayProbability != nil && *colorParams.DelayProbability > 0 && *colorParams.DelayProbability >= rand.Intn(100) {
 		log.Printf("Delaying request %ds", colorParams.DelayLength)
 		time.Sleep(time.Duration(colorParams.DelayLength) * time.Second)
 	}
 
-	if colorParams.Return502Probablility != nil && *colorParams.Return502Probablility >= rand.Intn(100) {
+	if colorParams.Return502Probablility != nil && *colorParams.Return502Probablility > 0 && *colorParams.Return502Probablility >= rand.Intn(100) {
 		log.Println("Returning 502")
-		w.WriteHeader(502)
-	}
-	printColor(colorToReturn, w)
+		printColor(colorToReturn, w, false)
+		return
 
+	}
+	printColor(colorToReturn, w, true)
 }
 
-func printColor(colorToPrint string, w http.ResponseWriter) {
+func printColor(colorToPrint string, w http.ResponseWriter, healthy bool) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(http.StatusOK)
+	if healthy {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(502)
+	}
 	switch colorToPrint {
 	case "":
 		randomColor := randomColor()
-		log.Printf("Successful %s\n", randomColor)
+		if healthy {
+			log.Printf("Successful %s\n", randomColor)
+		} else {
+			log.Printf("502 - %s\n", randomColor)
+		}
 		fmt.Fprintf(w, "\"%s\"", randomColor)
 	default:
-		log.Printf("Successful %s\n", colorToPrint)
+		if healthy {
+			log.Printf("Successful %s\n", colorToPrint)
+		} else {
+			log.Printf("502 - %s\n", colorToPrint)
+		}
 		fmt.Fprintf(w, "\"%s\"", colorToPrint)
 	}
 }
