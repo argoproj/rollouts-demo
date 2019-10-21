@@ -148,7 +148,6 @@ export class Color {
         this.isSelected = false;
 
         this.return502 = 0;
-        this.return404 = 0;
         this.delayPercent = 0;
         this.delayLength = 0;
 
@@ -169,7 +168,6 @@ export class Color {
 
     setSliderValues(updatedValues) {
         this.return502 = updatedValues;
-        this.return404 = updatedValues;
         this.delayPercent = updatedValues;
         this.delayLength = 0;
     }
@@ -178,7 +176,6 @@ export class Color {
         return {
             "color": this.color,
             "return502": parseInt(this.return502),
-            "return404": parseInt(this.return404),
             "delayPercent": parseInt(this.delayPercent),
             "delayLength": parseInt(this.delayLength)
         }
@@ -196,9 +193,6 @@ export class Sliders {
 
         this.return502 = document.getElementById("return502");
         this.return502.addEventListener("input", this.updateColor.bind(this))
-        
-        this.return404 = document.getElementById("return404");
-        this.return404.addEventListener("input", this.updateColor.bind(this))
         
         this.delayPercent = document.getElementById("delayPercent");
         this.delayPercent.addEventListener("input", this.updateColor.bind(this))
@@ -218,7 +212,6 @@ export class Sliders {
 
     updateColor() {
         this.currentColor.return502 = this.return502.value;
-        this.currentColor.return404 = this.return404.value;
         this.currentColor.delayPercent =this.delayPercent.value;
         this.currentColor.delayLength = this.delayLength.value;
     }
@@ -276,7 +269,6 @@ export class Sliders {
 
     SetSliders(color) {
         this.return502.value = color.return502
-        this.return404.value = color.return404
         this.delayPercent.value = color.delayPercent
         this.delayLength.value = color.delayLength
     }

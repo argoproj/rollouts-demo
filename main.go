@@ -96,7 +96,6 @@ type colorParameters struct {
 	DelayLength      int    `json:"delayLength,omitempty"`
 
 	Return502Probablility *int `json:"return502,omitempty"`
-	Return404Probablility *int `json:"return404,omitempty"`
 }
 
 func getColor(w http.ResponseWriter, r *http.Request) {
@@ -138,12 +137,8 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 	if colorParams.Return502Probablility != nil && *colorParams.Return502Probablility >= rand.Intn(100) {
 		log.Println("Returning 502")
 		w.WriteHeader(502)
-	} else if colorParams.Return404Probablility != nil && *colorParams.Return404Probablility >= rand.Intn(100) {
-		log.Println("Returning 404")
-		w.WriteHeader(404)
-	} else {
-		printColor(colorToReturn, w)
 	}
+	printColor(colorToReturn, w)
 
 }
 
