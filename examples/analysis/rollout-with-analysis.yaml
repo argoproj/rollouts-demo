@@ -1,0 +1,9 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: canary-demo
+spec:
+  strategy:
+    canary:
+      analysis:
+        templateName: "analysis-template"

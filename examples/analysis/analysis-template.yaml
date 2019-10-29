@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: analysis-template
+spec:
+  metrics:
+  - name: successful-calls
+    interval: 10
+    successCondition: result[0] > 0.95
+    failureCondition: result[0] < 0.92
+    provider:
+      prometheus:
+        address: http://prometheus-operator.prometheus-prometheus-operator-prometheus:9090
+        query: |    
+          sum(rate(nginx_ingress_controller_requests{ingress="canary-demo",status!~"[4-5].*"}[2m])) / sum(rate(nginx_ingress_controller_requests{ingress="canary-demo"}[2m]))
