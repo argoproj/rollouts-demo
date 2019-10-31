@@ -6,4 +6,5 @@ spec:
   strategy:
     canary:
       analysis:
+        name: "analysis"
         templateName: "analysis-template"
