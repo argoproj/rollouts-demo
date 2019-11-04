@@ -6,8 +6,8 @@ spec:
   metrics:
   - name: successful-calls
     interval: 10
-    successCondition: result[0] > 0.80
-    failureCondition: result[0] < 0.50
+    successCondition: result[0] > 0.90
+    failureCondition: result[0] < 0.70
     provider:
       prometheus:
         address: http://prometheus-operator-prometheus.prometheus-operator:9090

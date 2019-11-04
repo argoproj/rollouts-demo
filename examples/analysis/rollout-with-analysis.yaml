@@ -4,7 +4,15 @@ metadata:
   name: canary-demo
 spec:
   strategy:
+    replicas: 10
     canary:
       analysis:
         name: "analysis"
         templateName: "analysis-template"
+      steps:
+      - setWeight: 40
+      - pause: {}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
