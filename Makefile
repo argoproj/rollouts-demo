@@ -25,6 +25,10 @@ image:
 run:
 	go run main.go
 
+.PHONY: lint
+lint:
+	golangci-lint run --fix
+
 .PHONY: release
 release:
 	./release.sh DOCKER_PUSH=${DOCKER_PUSH} IMAGE_NAMESPACE=${IMAGE_NAMESPACE}

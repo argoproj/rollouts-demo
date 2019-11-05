@@ -1,0 +1,44 @@
+# This example demonstrates an experiment which starts two ReplicaSets with different images
+# The label used in the experiment are the same as the canary-demo, so when run in conjunction,
+# will serve part of the traffic of the service.
+apiVersion: argoproj.io/v1alpha1
+kind: Experiment
+metadata:
+  generateName: experiment-demo-
+spec:
+  duration: 30
+  templates:
+  - name: purple
+    selector:
+      matchLabels:
+        app: canary-demo
+    template:
+      metadata:
+        labels:
+          app: canary-demo
+      spec:
+        containers:
+        - name: rollouts-demo
+          image: argoproj/rollouts-demo:purple
+          imagePullPolicy: Always
+          ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+  - name: orange
+    selector:
+      matchLabels:
+        app: canary-demo
+    template:
+      metadata:
+        labels:
+          app: canary-demo
+      spec:
+        containers:
+        - name: rollouts-demo
+          image: argoproj/rollouts-demo:orange
+          imagePullPolicy: Always
+          ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
