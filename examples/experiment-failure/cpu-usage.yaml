@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: cpu-usage
+spec:
+  metrics:
+  - name: cpu-usage
+    interval: 60
+    successCondition: result[0] < 0.50
+    failureCondition: result[0] > 0.50
+    provider:
+      prometheus:
+        address: http://prometheus-operator-prometheus.prometheus-operator:9090
+        query: |
+          sum(namespace_pod_name_container_name:container_cpu_usage_seconds_total:sum_rate{pod_name=~"experiment-failure-.*", container_name!="POD"}) by (container_name)
