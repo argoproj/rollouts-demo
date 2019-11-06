@@ -37,8 +37,9 @@ class Particle {
 }
 
 class Chart {
-    constructor(app) {
+    constructor(app, canvas) {
         this.app = app;
+        this.canvas = canvas
         this.sinceLastBar = 0;
         this.bars = [];
         this.nextBarInfo = new Map();
@@ -96,18 +97,21 @@ class Chart {
         const distance = 20;
         const count = this.app.canvas.width / (width + distance);
         const start = Math.max(0, this.bars.length - count);
-        this.bars.slice(start).forEach((function(bar, i) {
+        const canvasWidth = this.canvas.width
+        this.bars.slice(start).reverse().forEach((function(bar, i) {
             let offset = 0;
+            const x = canvasWidth - (distance * i + width * i)
             bar.forEach((function(part) {
                 if (part[502] > 0) {
                     context.fillStyle = "dark" + part.color;
                     const partHeight = height * part[502];
-                    context.fillRect(distance * i + width * i, this.app.canvas.height - (partHeight + offset), width, partHeight);
+                    context.fillRect(x, this.app.canvas.height - (partHeight + offset), -width, partHeight);
+
                     offset += partHeight;
                 }
                 context.fillStyle = part.color;
                 const partHeight = height * part[200];
-                context.fillRect(distance * i + width * i, this.app.canvas.height - (partHeight + offset), width, partHeight);
+                context.fillRect(x, this.app.canvas.height - (partHeight + offset), -width, partHeight);
                 offset += partHeight;
             }).bind(this));
         }).bind(this));
@@ -121,7 +125,7 @@ export class App {
     constructor(canvas) {
         this.canvas = canvas;
         this.particles = [];
-        this.chart = new Chart(this);
+        this.chart = new Chart(this, canvas);
         this.sliders = new Sliders(this)
     }
 
