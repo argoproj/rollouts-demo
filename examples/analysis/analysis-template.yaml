@@ -7,9 +7,8 @@ spec:
   - name: successful-calls
     interval: 10
     successCondition: result[0] > 0.90
-    failureCondition: result[0] < 0.70
     provider:
       prometheus:
         address: http://prometheus-operator-prometheus.prometheus-operator:9090
         query: |    
-          sum(rate(nginx_ingress_controller_requests{ingress="canary-demo",status!~"[4-5].*"}[2m])) / sum(rate(nginx_ingress_controller_requests{ingress="canary-demo"}[2m]))
+          sum(rate(nginx_ingress_controller_requests{ingress="canary-demo",status!~"[4-5].*"}[20s])) / sum(rate(nginx_ingress_controller_requests{ingress="canary-demo"}[20s]))
