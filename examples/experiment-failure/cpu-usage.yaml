@@ -5,10 +5,13 @@ metadata:
 spec:
   metrics:
   - name: cpu-usage
-    interval: 60
-    successCondition: result[0] < 0.50
+    interval: 30
+    successCondition: result[0] < 0.30
     provider:
       prometheus:
         address: http://prometheus-operator-prometheus.prometheus-operator:9090
-        query: |
-          sum(namespace_pod_name_container_name:container_cpu_usage_seconds_total:sum_rate{pod_name=~"experiment-failure-.*", container_name!="POD"}) by (container_name)
+        query: >-
+          sum(
+            namespace_pod_name_container_name:container_cpu_usage_seconds_total:sum_rate
+            {pod_name=~"experiment-failure-bad-.*",container_name!="POD"}
+          )

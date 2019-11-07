@@ -1,10 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Experiment
 metadata:
-  generateName: experiment-failure-
+  name: experiment-failure
 spec:
   templates:
-  - name: black
+  - name: bad
+    minReadySeconds: 60
     selector:
       matchLabels:
         app: canary-demo

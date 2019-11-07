@@ -6,8 +6,8 @@ spec:
   strategy:
     canary:
       analysis:
-        name: "analysis"
-        templateName: "analysis-template"
+        name: success-rate
+        templateName: success-rate
       steps:
       - setWeight: 40
       - pause: {}

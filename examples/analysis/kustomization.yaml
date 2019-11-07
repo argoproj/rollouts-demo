@@ -5,7 +5,7 @@ bases:
 - ../canary/
 
 resources:
-- analysis-template.yaml
+- analysis-success-rate.yaml
 
 patchesStrategicMerge:
 - rollout-with-analysis.yaml

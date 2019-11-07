@@ -4,9 +4,9 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Experiment
 metadata:
-  generateName: experiment-demo-
+  name: experiment-demo
 spec:
-  duration: 30
+  duration: 60
   templates:
   - name: purple
     selector:
