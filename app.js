@@ -107,7 +107,13 @@ class Chart {
             const x = canvasWidth - (distance * i + width * i)
             bar.forEach((function(part) {
                 if (part[500] > 0) {
-                    context.fillStyle = "dark" + part.color;
+                    let color = part.color
+                    if (color == "yellow") {
+                        color = "GoldenRod";
+                    } else {
+                        color = "dark" + color;
+                    }
+                    context.fillStyle = color
                     const partHeight = height * part[500];
                     context.fillRect(x, this.app.canvas.height - (partHeight + offset), -width, partHeight);
 
