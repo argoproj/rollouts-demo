@@ -151,7 +151,7 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, err.Error())
 			return
 		}
-		returnSuccess = rand.Intn(100) < errorRate
+		returnSuccess = rand.Intn(100) >= errorRate
 	} else if colorParams.Return500Probability != nil && *colorParams.Return500Probability > 0 && *colorParams.Return500Probability >= rand.Intn(100) {
 		returnSuccess = false
 	}

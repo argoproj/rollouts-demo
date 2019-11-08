@@ -1,9 +1,12 @@
-# This rollout starts an experiment which starts the new version as a preview stack, which receives
-# no production traffic. While the preview stack is running, it simultaneously start 
+# This rollout uses an experiment to start the new version as a preview stack, which receives no
+# production traffic, but is still internally reachable inside the cluster. While the preview is
+# running, the Experiment simultaneously starts an AnalysisRun which performs load testing via a
+# k8s Job. This job runs the 'wrk' benchmarking tool and analyzes the latency and error rate of the
+# preview stack. If the Experiment/Analysis is successful, the rollout proceeds, otherwise aborts.
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: canary-demo
+  name: preview-load-test
 spec:
   replicas: 5
   revisionHistoryLimit: 1
@@ -36,15 +39,36 @@ spec:
     canary:
       steps:
       - experiment:
+          duration: 60
           templates:
-          - name: canary-preview
+          - name: preview
+            # specRef is a convenience reference indicte that the canary's pod spec should be used in this experiment.
             specRef: canary
+            # The preview template's selector/labels are overwritten so that they are different
+            # than the rollout's selector, allowing it to be reached separately
             selector:
               matchLabels:
-                app: rollout-canary-preview
+                app: preview
             metadata:
               labels:
-                app: rollout-canary-preview
+                app: preview
+          # The 'load-test' AnalysisTemplate uses `wrk` to perform benchmarking. See: load-test-analysis.yaml
           analyses:
           - name: load-test
             templateName: load-test
+
+---
+# This service targets the preview stack labels (separately from the production service), so that
+# HTTP benchmarking can be performed in-cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary-demo-preview
+spec:
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: preview

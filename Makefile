@@ -26,6 +26,12 @@ image:
 	docker build --build-arg COLOR=${COLOR} --build-arg ERROR_RATE=${ERROR_RATE} -t $(IMAGE_PREFIX)rollouts-demo:${IMAGE_TAG} .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then docker push $(IMAGE_PREFIX)rollouts-demo:$(IMAGE_TAG) ; fi
 
+.PHONY: load-tester-image
+load-tester-image:
+	cd load-tester
+	docker build -t $(IMAGE_PREFIX)load-tester:latest load-tester
+	@if [ "$(DOCKER_PUSH)" = "true" ] ; then docker push $(IMAGE_PREFIX)load-tester:latest ; fi
+
 .PHONY: run
 run:
 	go run main.go
