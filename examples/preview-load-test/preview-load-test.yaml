@@ -12,11 +12,11 @@ spec:
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: canary-demo
+      app: preview-load-test
   template:
     metadata:
       labels:
-        app: canary-demo
+        app: preview-load-test
     spec:
       containers:
       - name: canary-demo
