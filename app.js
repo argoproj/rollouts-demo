@@ -31,12 +31,17 @@ class Particle {
 
     draw(context) {
         context.beginPath();
+        context.fillStyle=this.color;
         context.shadowBlur=15;
         context.shadowColor='#009933';
-        context.fillStyle=this.color;
         context.arc(this.x, this.y, this.size, 0, Math.PI*2, true);
         context.closePath();
         context.fill();
+        if (this.statusCode == 500) {
+            context.lineWidth = 5;
+            context.strokeStyle = "black";
+            context.stroke();
+        }
     }
 }
 
