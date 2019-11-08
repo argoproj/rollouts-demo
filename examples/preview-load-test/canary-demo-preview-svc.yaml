@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: canary-demo
+  name: canary-demo-preview
 spec:
   ports:
   - port: 80
@@ -9,4 +9,4 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: canary-demo
+    app: rollout-canary-preview

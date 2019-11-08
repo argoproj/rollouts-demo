@@ -37,6 +37,7 @@ var (
 		"blue",
 		"purple",
 	}
+	envErrorRate = os.Getenv("ERROR_RATE")
 )
 
 func main() {
@@ -100,25 +101,27 @@ type colorParameters struct {
 	DelayProbability *int   `json:"delayPercent,omitempty"`
 	DelayLength      int    `json:"delayLength,omitempty"`
 
-	Return502Probablility *int `json:"return502,omitempty"`
+	Return500Probability *int `json:"return500,omitempty"`
 }
 
 func getColor(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(502)
+		w.WriteHeader(500)
+		log.Println(err.Error())
+		fmt.Fprintf(w, err.Error())
 		return
 	}
-	//The frontend has stored no values
-	if string(requestBody) == `"[]"` {
-		printColor(color, w, true)
-		return
-	}
-	request := []colorParameters{}
-	err = json.Unmarshal(requestBody, &request)
-	if err != nil {
-		w.WriteHeader(502)
-		return
+
+	var request []colorParameters
+	if len(requestBody) > 0 && string(requestBody) != `"[]"` {
+		err = json.Unmarshal(requestBody, &request)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Printf("%s: %v", string(requestBody), err.Error())
+			fmt.Fprintf(w, err.Error())
+			return
+		}
 	}
 
 	colorToReturn := randomColor()
@@ -135,17 +138,24 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if colorParams.DelayProbability != nil && *colorParams.DelayProbability > 0 && *colorParams.DelayProbability >= rand.Intn(100) {
-		log.Printf("Delaying request %ds", colorParams.DelayLength)
+		log.Printf("Delaying %s %ds", colorToReturn, colorParams.DelayLength)
 		time.Sleep(time.Duration(colorParams.DelayLength) * time.Second)
 	}
 
-	if colorParams.Return502Probablility != nil && *colorParams.Return502Probablility > 0 && *colorParams.Return502Probablility >= rand.Intn(100) {
-		log.Println("Returning 502")
-		printColor(colorToReturn, w, false)
-		return
-
+	returnSuccess := true
+	if envErrorRate != "" {
+		errorRate, err := strconv.Atoi(envErrorRate)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Printf("%s: %v", string(requestBody), err.Error())
+			fmt.Fprintf(w, err.Error())
+			return
+		}
+		returnSuccess = rand.Intn(100) < errorRate
+	} else if colorParams.Return500Probability != nil && *colorParams.Return500Probability > 0 && *colorParams.Return500Probability >= rand.Intn(100) {
+		returnSuccess = false
 	}
-	printColor(colorToReturn, w, true)
+	printColor(colorToReturn, w, returnSuccess)
 }
 
 func printColor(colorToPrint string, w http.ResponseWriter, healthy bool) {
@@ -154,7 +164,8 @@ func printColor(colorToPrint string, w http.ResponseWriter, healthy bool) {
 	if healthy {
 		w.WriteHeader(http.StatusOK)
 	} else {
-		w.WriteHeader(502)
+		log.Println("Returning 500")
+		w.WriteHeader(500)
 	}
 	switch colorToPrint {
 	case "":
@@ -162,14 +173,14 @@ func printColor(colorToPrint string, w http.ResponseWriter, healthy bool) {
 		if healthy {
 			log.Printf("Successful %s\n", randomColor)
 		} else {
-			log.Printf("502 - %s\n", randomColor)
+			log.Printf("500 - %s\n", randomColor)
 		}
 		fmt.Fprintf(w, "\"%s\"", randomColor)
 	default:
 		if healthy {
 			log.Printf("Successful %s\n", colorToPrint)
 		} else {
-			log.Printf("502 - %s\n", colorToPrint)
+			log.Printf("500 - %s\n", colorToPrint)
 		}
 		fmt.Fprintf(w, "\"%s\"", colorToPrint)
 	}

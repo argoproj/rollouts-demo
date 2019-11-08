@@ -12,12 +12,11 @@
 
     <div class="textbox">
         <h3 id="currentColor" style="text-align: center">Color<h3>
-        <label>502 percentage</label>
-        <input type="range" min="0" max="100" value="0" class="slider" id="return502" onchange="output502.value = return502.value + '%'">
-        <output name="output502" id="output502">0%</output>
-        <p>Delayed Responses</pp>
-        <input type="range" min="1" max="100" value="0" class="slider" id="delayPercent" onchange="delayPercentText.value = delayPercent.value + '%'">
-        <output name="delayPercentText" id="delayPercentText">0%</output>
+        <label>500 Error Rate:</label> <output name="output500" id="output500">0%</output>
+        <input type="range" min="0" max="100" value="0" class="slider" id="return500" onchange="output500.value = return500.value + '%'">
+        <label>Latency Rate:</label> <output name="delayPercentText" id="delayPercentText">0%</output>
+        <input type="range" min="0" max="100" value="0" class="slider" id="delayPercent" onchange="delayPercentText.value = delayPercent.value + '%'">
+        <label>Latency Seconds:</label> 
         <input type="text" value="0" id="delayLength">
         <div id="availableColors"></div>
     </div>

@@ -13,5 +13,7 @@ COPY --from=build /go/src/app/rollouts-demo /rollouts-demo
 
 ARG COLOR
 ENV COLOR=${COLOR}
+ARG ERROR_RATE
+ENV ERROR_RATE=${ERROR_RATE}
 
 ENTRYPOINT [ "/rollouts-demo" ]

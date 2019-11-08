@@ -1,0 +1,48 @@
+# This analysis template utilizes the job metric provider, which runs wrk (https://github.com/wg/wrk),
+# an HTTP benchmarking tool, against the preview stack, then prints out the result.
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: load-test
+spec:
+  metrics:
+  - name: load
+    provider:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+              - name: load
+                image: skandyla/wrk:debian8
+                command: [sh, -c, -x, -e]
+                args:
+                - |
+                  apt-get update -y
+                  apt-get install jq
+                  cat <<EOF > report.lua
+                    done = function(summary, latency, requests)
+                        io.write("\n------------------------------\n")
+                        file = io.open('report.json', 'a')
+                        io.output(file)
+                        io.write(string.format("{\n  \"requests_sec\":%.2f,\n  \"transfer_sec\":\"%.2fMB\",\n  \"avg_latency_ms\":%.2f,\n  \"errors_sum\":%.2f,\n  \"duration\":%.2f,\n  \"requests\":%.2f,\n  \"bytes\":%.2f,\n  \"latency.min\":%.2f,\n  \"latency.max\":%.2f,\n  \"latency.mean\":%.2f,\n  \"latency.stdev\":%.2f\n}\n",
+                                summary.requests/(summary.duration/1000000),
+                                summary.bytes/(summary.duration*1048576/1000000),
+                                (latency.mean/1000),
+                                summary.errors.connect + summary.errors.read + summary.errors.write + summary.errors.status + summary.errors.timeout,
+                                summary.duration,
+                                summary.requests,
+                                summary.bytes,
+                                latency.min,
+                                latency.max,
+                                latency.mean,
+                                latency.stdev
+                            )
+                        )
+                    end
+                  EOF
+                  wrk -t12 -c100 -d10s -s report.lua http://canary-demo-preview/color
+                  cat report.json
+                  jq -e '.errors_sum == 0' report.json
+              restartPolicy: Never
+          backoffLimit: 0

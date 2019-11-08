@@ -4,6 +4,11 @@ html, body {
     height: 100%;
 }
 
+* {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 10pt;
+}
+
 .logo {
     z-index: 1;
     position: absolute;
@@ -19,6 +24,10 @@ html, body {
     top: 1em;
     right: 3em;
     background: whitesmoke
+}
+
+input#delayLength {
+  width: 190px;
 }
 
 .currentColor{
@@ -45,7 +54,7 @@ html, body {
   .slider {
     -webkit-appearance: none;  /* Override default CSS styles */
     appearance: none;
-    width: 100%; /* Full-width */
+    width: 98%; /* Full-width */
     height: 25px; /* Specified height */
     background: #d3d3d3; /* Grey background */
     outline: none; /* Remove outline */

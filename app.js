@@ -2,8 +2,12 @@ class Particle {
     constructor(x, y, color, statusCode, responseTime) {
         this.statusCode = statusCode
         this.color = color;
-        if (this.statusCode == 502) {
-            this.color = "dark" + color;
+        if (this.statusCode == 500) {
+            if (color == "yellow") {
+                this.color = "GoldenRod";
+            } else {
+                this.color = "dark" + color;
+            }
         }
         this.x = x;
         this.y = y;
@@ -54,7 +58,7 @@ class Chart {
             stats = {
                 total: 0,
                 200: 0,
-                502: 0
+                500: 0
             }
         }
         stats.total = stats.total + 1
@@ -75,7 +79,7 @@ class Chart {
                         color,
                         percentage: count.total / total,
                         200:  count[200] / total,
-                        502:  count[502] / total,
+                        500:  count[500] / total,
                     };
                 }.bind(this)).sort(function(first, second) {
                     return first.color.localeCompare(second.color);
@@ -102,9 +106,9 @@ class Chart {
             let offset = 0;
             const x = canvasWidth - (distance * i + width * i)
             bar.forEach((function(part) {
-                if (part[502] > 0) {
+                if (part[500] > 0) {
                     context.fillStyle = "dark" + part.color;
-                    const partHeight = height * part[502];
+                    const partHeight = height * part[500];
                     context.fillRect(x, this.app.canvas.height - (partHeight + offset), -width, partHeight);
 
                     offset += partHeight;
@@ -182,7 +186,7 @@ export class Color {
         this.color = color;
         this.isSelected = false;
 
-        this.return502 = 0;
+        this.return500 = 0;
         this.delayPercent = 0;
         this.delayLength = 0;
 
@@ -202,7 +206,7 @@ export class Color {
     }
 
     setSliderValues(updatedValues) {
-        this.return502 = updatedValues;
+        this.return500 = updatedValues;
         this.delayPercent = updatedValues;
         this.delayLength = 0;
     }
@@ -210,7 +214,7 @@ export class Color {
     GetSliderValues() {
         return {
             "color": this.color,
-            "return502": parseInt(this.return502),
+            "return500": parseInt(this.return500),
             "delayPercent": parseInt(this.delayPercent),
             "delayLength": parseInt(this.delayLength)
         }
@@ -226,8 +230,8 @@ export class Sliders {
     constructor(app) {
         this.app = app;
 
-        this.return502 = document.getElementById("return502");
-        this.return502.addEventListener("input", this.updateColor.bind(this))
+        this.return500 = document.getElementById("return500");
+        this.return500.addEventListener("input", this.updateColor.bind(this))
     
         
         this.delayPercent = document.getElementById("delayPercent");
@@ -247,7 +251,7 @@ export class Sliders {
     }
 
     updateColor() {
-        this.currentColor.return502 = this.return502.value;
+        this.currentColor.return500 = this.return500.value;
         this.currentColor.delayPercent =this.delayPercent.value;
         this.currentColor.delayLength = this.delayLength.value;
     }
@@ -304,7 +308,7 @@ export class Sliders {
     }
 
     SetSliders(color) {
-        this.return502.value = color.return502
+        this.return500.value = color.return500
         this.delayPercent.value = color.delayPercent
         this.delayLength.value = color.delayLength
     }
