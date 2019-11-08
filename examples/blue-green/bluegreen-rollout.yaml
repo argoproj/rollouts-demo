@@ -6,7 +6,7 @@ metadata:
     app: bluegreen-demo
 spec:
   replicas: 3
-  revisionHistoryLimit: 3
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       app: bluegreen-demo
