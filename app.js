@@ -190,7 +190,6 @@ export class Color {
         this.delayPercent = 0;
         this.delayLength = 0;
 
-
         this.square = document.createElement('div');
         this.square.className = "square " + color;
         this.square.style["background"] = color
@@ -231,10 +230,11 @@ export class Sliders {
         this.app = app;
 
         this.return500 = document.getElementById("return500");
+        this.return500Text = document.getElementById("output500");
         this.return500.addEventListener("input", this.updateColor.bind(this))
     
-        
         this.delayPercent = document.getElementById("delayPercent");
+        this.delayPercentText = document.getElementById("delayPercentText");
         this.delayPercent.addEventListener("input", this.updateColor.bind(this))
         
         this.delayLength = document.getElementById("delayLength");
@@ -309,7 +309,9 @@ export class Sliders {
 
     SetSliders(color) {
         this.return500.value = color.return500
+        this.return500Text.innerText = color.return500 + "%"
         this.delayPercent.value = color.delayPercent
+        this.delayPercentText.innerText = color.delayPercent + "%"
         this.delayLength.value = color.delayLength
     }
 
