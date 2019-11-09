@@ -42,7 +42,7 @@ spec:
           duration: 60
           templates:
           - name: preview
-            # specRef is a convenience reference indicte that the canary's pod spec should be used in this experiment.
+            # specRef is a convenience reference indicating that the canary's pod spec should be used in this experiment.
             specRef: canary
             # The preview template's selector/labels are overwritten so that they are different
             # than the rollout's selector, allowing it to be reached separately
@@ -56,6 +56,9 @@ spec:
           analyses:
           - name: load-test
             templateName: load-test
+            args:
+            - name: service-name
+              value: preview-load-test
 
 ---
 # This service targets the preview stack labels (separately from the production service), so that
@@ -63,7 +66,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: canary-demo-preview
+  name: preview-load-test
 spec:
   ports:
   - port: 80
