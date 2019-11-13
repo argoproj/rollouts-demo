@@ -39,7 +39,7 @@ spec:
     canary:
       steps:
       - experiment:
-          duration: 60
+          duration: 60s
           templates:
           - name: preview
             # specRef is a convenience reference indicating that the canary's pod spec should be used in this experiment.

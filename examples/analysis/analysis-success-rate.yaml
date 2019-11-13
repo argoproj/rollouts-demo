@@ -7,7 +7,7 @@ spec:
   - name: ingress
   metrics:
   - name: success-rate
-    interval: 10
+    interval: 10s
     successCondition: result[0] > 0.90
     provider:
       prometheus:

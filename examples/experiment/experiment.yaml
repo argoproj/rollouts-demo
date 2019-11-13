@@ -6,7 +6,7 @@ kind: Experiment
 metadata:
   name: experiment-demo
 spec:
-  duration: 60
+  duration: 60s
   templates:
   - name: purple
     selector:
