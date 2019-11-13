@@ -1,25 +1,27 @@
-# This example demonstrates an experiment which starts two ReplicaSets with different images
-# The label used in the experiment are the same as the canary-demo, so when run in conjunction,
-# will serve part of the traffic of the service.
+# This example demonstrates an experiment which starts two ReplicaSets with different images.
+# While the experiment is running, it performs a job-based analysis, which performs HTTP benchmarking
+# against each replicasets via their respective ingresses.
 apiVersion: argoproj.io/v1alpha1
 kind: Experiment
 metadata:
   name: experiment-demo
 spec:
-  duration: 60s
+  duration: 1h
   templates:
   - name: purple
     selector:
       matchLabels:
         app: canary-demo
+        color: purple
     template:
       metadata:
         labels:
           app: canary-demo
+          color: purple
       spec:
         containers:
         - name: rollouts-demo
-          image: argoproj/rollouts-demo:purple
+          image: argoproj/rollouts-demo:bad-purple
           imagePullPolicy: Always
           ports:
           - name: http
@@ -29,10 +31,12 @@ spec:
     selector:
       matchLabels:
         app: canary-demo
+        color: orange
     template:
       metadata:
         labels:
           app: canary-demo
+          color: orange
       spec:
         containers:
         - name: rollouts-demo
@@ -42,3 +46,15 @@ spec:
           - name: http
             containerPort: 8080
             protocol: TCP
+
+  analyses:
+  - name: purple
+    templateName: http-benchmark
+    args:
+    - name: hostname
+      value: purple.dev.argoproj.io
+  - name: orange
+    templateName: http-benchmark
+    args:
+    - name: hostname
+      value: orange.dev.argoproj.io

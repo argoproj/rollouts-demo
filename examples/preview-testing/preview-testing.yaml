@@ -6,17 +6,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: preview-load-test
+  name: preview-testing
 spec:
   replicas: 5
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: preview-load-test
+      app: preview-testing
   template:
     metadata:
       labels:
-        app: preview-load-test
+        app: preview-testing
     spec:
       containers:
       - name: canary-demo
@@ -55,10 +55,10 @@ spec:
           # The 'load-test' AnalysisTemplate uses `wrk` to perform benchmarking. See: load-test-analysis.yaml
           analyses:
           - name: load-test
-            templateName: load-test
+            templateName: http-benchmark
             args:
-            - name: service-name
-              value: preview-load-test
+            - name: hostname
+              value: preview-testing
 
 ---
 # This service targets the preview stack labels (separately from the production service), so that
@@ -66,7 +66,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: preview-load-test
+  name: preview-testing
 spec:
   ports:
   - port: 80
