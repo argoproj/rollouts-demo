@@ -25,7 +25,7 @@ class Particle {
     }
 
     tick(duration) {
-        this.x += this.vx * duration;
+        this.x += -1 * this.vx * duration;
         this.y += this.vy * duration;
     }
 
@@ -159,7 +159,7 @@ export class App {
             var receiveTime = (new Date()).getTime();
             var responseTimeMs = receiveTime - sendTime;
             let startingY = (this.canvas.height - this.chart.height - ParticleMaxSize - ArgoImageSize) * Math.random() + ArgoImageSize
-            this.particles.unshift(new Particle(0, startingY, res.color, res.res.status, responseTimeMs));
+            this.particles.unshift(new Particle(this.canvas.width, startingY, res.color, res.res.status, responseTimeMs));
             this.particles = this.particles.slice(0, 200);
             this.chart.addColor(res.color, res.res.status);
             this.sliders.addColor(res.color)
