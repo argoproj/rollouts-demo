@@ -13,8 +13,8 @@ class Particle {
         this.y = y;
 
         this.size = Math.random() * 20 + 10;
-        this.maxSpeeed = 600
-        this.maxSlowDown = 400
+        this.maxSpeeed = 300
+        this.maxSlowDown = 200
         this.maxDelay = 5000
         this.vx = this.maxSpeeed - (this.maxSlowDown * responseTime/this.maxDelay)
         if (responseTime > this.maxDelay) {
