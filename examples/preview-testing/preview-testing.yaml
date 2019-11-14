@@ -57,7 +57,7 @@ spec:
           - name: load-test
             templateName: http-benchmark
             args:
-            - name: hostname
+            - name: host
               value: preview-testing
 
 ---

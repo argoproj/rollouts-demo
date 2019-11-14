@@ -1,6 +1,6 @@
 # This example demonstrates an experiment which starts two ReplicaSets with different images.
-# While the experiment is running, it performs a job-based analysis, which performs HTTP benchmarking
-# against each replicasets via their respective ingresses.
+# While the experiment is running, it runs a job-based analysis, which performs HTTP benchmarking
+# against each replicasets via their respective services.
 apiVersion: argoproj.io/v1alpha1
 kind: Experiment
 metadata:
@@ -9,6 +9,8 @@ spec:
   duration: 1h
   templates:
   - name: purple
+    replicas: 2
+    minReadySeconds: 10
     selector:
       matchLabels:
         app: canary-demo
@@ -21,13 +23,15 @@ spec:
       spec:
         containers:
         - name: rollouts-demo
-          image: argoproj/rollouts-demo:bad-purple
+          image: argoproj/rollouts-demo:purple
           imagePullPolicy: Always
           ports:
           - name: http
             containerPort: 8080
             protocol: TCP
   - name: orange
+    minReadySeconds: 10
+    replicas: 2
     selector:
       matchLabels:
         app: canary-demo
@@ -40,7 +44,9 @@ spec:
       spec:
         containers:
         - name: rollouts-demo
-          image: argoproj/rollouts-demo:orange
+          # Note that this is intentionally using a "bad" version of the image, the bad image has a
+          # high error rate, which will cause the experiment to fail prematurely
+          image: argoproj/rollouts-demo:bad-orange
           imagePullPolicy: Always
           ports:
           - name: http
@@ -50,11 +56,7 @@ spec:
   analyses:
   - name: purple
     templateName: http-benchmark
-    args:
-    - name: hostname
-      value: purple.dev.argoproj.io
+    args: [{name: host, value: purple}]
   - name: orange
     templateName: http-benchmark
-    args:
-    - name: hostname
-      value: orange.dev.argoproj.io
+    args: [{name: host, value: orange}]
