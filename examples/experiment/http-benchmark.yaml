@@ -10,6 +10,8 @@ spec:
   - name: host
   metrics:
   - name: http-benchmark
+    failureLimit: 100
+    interval: 5s
     provider:
       job:
         spec:
@@ -21,7 +23,7 @@ spec:
                 command: [sh, -xec]
                 args:
                 - |
-                  wrk -t1 -c1 -d45 -s report.lua http://{{args.host}}/color
+                  wrk -t1 -c1 -d10 -s report.lua http://{{args.host}}/color
                   jq -e '.errors_ratio <= 0.05' report.json
               restartPolicy: Never
           backoffLimit: 0

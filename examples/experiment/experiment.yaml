@@ -6,8 +6,8 @@ kind: Experiment
 metadata:
   name: experiment-demo
 spec:
-  duration: 1h
-  templates:
+  duration: 15m
+    templates:
   - name: purple
     replicas: 2
     minReadySeconds: 10
