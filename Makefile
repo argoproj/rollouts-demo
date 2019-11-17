@@ -6,6 +6,9 @@ IMAGE_TAG?=latest
 ifneq (${COLOR},)
 IMAGE_TAG=${COLOR}
 endif
+ifneq (${LATENCY},)
+IMAGE_TAG=slow-${COLOR}
+endif
 ifneq (${ERROR_RATE},)
 IMAGE_TAG=bad-${COLOR}
 endif
@@ -23,7 +26,7 @@ build:
 
 .PHONY: image
 image:
-	docker build --build-arg COLOR=${COLOR} --build-arg ERROR_RATE=${ERROR_RATE} -t $(IMAGE_PREFIX)rollouts-demo:${IMAGE_TAG} .
+	docker build --build-arg COLOR=${COLOR} --build-arg ERROR_RATE=${ERROR_RATE} --build-arg LATENCY=${LATENCY} -t $(IMAGE_PREFIX)rollouts-demo:${IMAGE_TAG} .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then docker push $(IMAGE_PREFIX)rollouts-demo:$(IMAGE_TAG) ; fi
 
 .PHONY: load-tester-image

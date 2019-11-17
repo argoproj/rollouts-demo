@@ -38,6 +38,7 @@ var (
 		"purple",
 	}
 	envErrorRate = os.Getenv("ERROR_RATE")
+	envLatency   = os.Getenv("LATENCY")
 )
 
 func main() {
@@ -137,7 +138,17 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if colorParams.DelayProbability != nil && *colorParams.DelayProbability > 0 && *colorParams.DelayProbability >= rand.Intn(100) {
+	if envLatency != "" {
+		latency, err := strconv.Atoi(envLatency)
+		if err != nil {
+			w.WriteHeader(500)
+			log.Printf("%s: %v", string(requestBody), err.Error())
+			fmt.Fprintf(w, err.Error())
+			return
+		}
+		log.Printf("Delaying %s %ds", colorToReturn, latency)
+		time.Sleep(time.Duration(latency) * time.Second)
+	} else if colorParams.DelayProbability != nil && *colorParams.DelayProbability > 0 && *colorParams.DelayProbability >= rand.Intn(100) {
 		log.Printf("Delaying %s %ds", colorToReturn, colorParams.DelayLength)
 		time.Sleep(time.Duration(colorParams.DelayLength) * time.Second)
 	}
