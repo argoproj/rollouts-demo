@@ -2,7 +2,7 @@
 
 This directory contains the Dockerfile for `argoproj/load-tester`, which is a simple image that contains:
 * [`wrk`](https://github.com/wg/wrk) - an HTTP benchmarking tool 
-* `report.lua` - a custom wrk reporting script, which generates  a report in json format
+* `report.lua` - a custom wrk reporting script, which generates a report in json format
 * [`jq`](https://github.com/stedolan/jq) - JSON processing utility to interpret the report and analyze for success or failure
 
 

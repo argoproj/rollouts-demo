@@ -1,25 +1,47 @@
 # Argo Rollouts Demo Application
 
-This application demonstrates implementation of various deployment strategies using Argo Rollouts. Demo includes a
-sample application and example rollout manifests which demonstrates various Argo Rollouts features.
-
-Instructions using Argo CD:
-
-1. Create the Argo CD application using one of the examples:
-
-```
-argocd app create rollouts-demo \
-  --repo https://github.com/argoproj/rollouts-demo \
-  --path examples/canary \
-  --dest-server https://kubernetes.default.svc \
-  --dest-namespace rollouts-demo
-```
-
-2. Visit app at http://rollouts-demo.apps.argoproj.io
+This repo contains the [Argo Rollouts](https://github.com/argoproj/argo-rollouts) demo application source code and examples. It demonstrates the
+various deployment strategies and progressive delivery features of Argo Rollouts.
 
 ![img](./demo.png)
 
-3. Upgrade app by changing image tag to another color and resyncing app
+## Examples
+
+The following examples are provided:
+
+| Example | Description |
+|---------|-------------|
+| [Canary](canary) | Rollout which uses the canary update strategy |
+| [Blue-Green](blue-green) |  Rollout which uses the blue-green update strategy |
+| [Canary Analysis](analysis) | Rollout which performs canary analysis as part of the update. Uses the prometheus metric provider. |
+| [Experiment](experiment) | Experiment which performs an A/B test. Performs analysis against the A and B using the job metric provider |
+| [Preview Stack Testing](preview-testing) | Rollout which launches an experiment that tests a preview stack (which receives no production traffic) |
+
+To run an example:
+
+1. Apply the manifests of one of the examples:
+
+```bash
+kustomize build <EXAMPLE-DIR> | kubectl apply -f -
+```
+
+2. Watch the rollout or experiment using the argo rollouts kubectl plugin:
+
+```bash
+kubectl argo rollouts get rollout <ROLLOUT-NAME> --watch
+kubectl argo rollouts get experiment <EXPERIMENT-NAME> --watch
+```
+
+3. For rollouts, trigger an update by setting the image of a new color to run:
+```bash
+kubectl argo rollouts set image <ROLLOUT-NAME> "*=argoproj/rollouts-demo:yellow"
+```
+
+## Images
+
+Available images colors are: red, orange, yellow, green, blue, purple (e.g. `argoproj/rollouts-demo:yellow`). Also available are:
+* High error rate images, prefixed with the word `bad` (e.g. `argoproj/rollouts-demo:bad-yellow`)
+* High latency images, prefixed with the word `slow` (e.g. `argoproj/rollouts-demo:slow-yellow`)
 
 
 ## Releasing
