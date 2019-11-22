@@ -59,7 +59,7 @@ func main() {
 	router.HandleFunc("/color", getColor)
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    listenAddr,
 		Handler: router,
 	}
 
