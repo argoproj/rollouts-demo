@@ -11,11 +11,11 @@ The following examples are provided:
 
 | Example | Description |
 |---------|-------------|
-| [Canary](canary) | Rollout which uses the canary update strategy |
-| [Blue-Green](blue-green) |  Rollout which uses the blue-green update strategy |
-| [Canary Analysis](analysis) | Rollout which performs canary analysis as part of the update. Uses the prometheus metric provider. |
-| [Experiment](experiment) | Experiment which performs an A/B test. Performs analysis against the A and B using the job metric provider |
-| [Preview Stack Testing](preview-testing) | Rollout which launches an experiment that tests a preview stack (which receives no production traffic) |
+| [Canary](examples/canary) | Rollout which uses the canary update strategy |
+| [Blue-Green](examples/blue-green) |  Rollout which uses the blue-green update strategy |
+| [Canary Analysis](examples/analysis) | Rollout which performs canary analysis as part of the update. Uses the prometheus metric provider. |
+| [Experiment](examples/experiment) | Experiment which performs an A/B test. Performs analysis against the A and B using the job metric provider |
+| [Preview Stack Testing](examples/preview-testing) | Rollout which launches an experiment that tests a preview stack (which receives no production traffic) |
 
 To run an example:
 
