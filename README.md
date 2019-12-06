@@ -17,6 +17,16 @@ The following examples are provided:
 | [Experiment](examples/experiment) | Experiment which performs an A/B test. Performs analysis against the A and B using the job metric provider |
 | [Preview Stack Testing](examples/preview-testing) | Rollout which launches an experiment that tests a preview stack (which receives no production traffic) |
 
+Before running an example:
+
+1. Install Argo Rollouts
+
+- See the document [Getting Started](https://argoproj.github.io/argo-rollouts/getting-started/)
+
+2. Install Kubectl Plugin
+
+- See the document [Kubectl Plugin](https://argoproj.github.io/argo-rollouts/features/kubectl-plugin/)
+
 To run an example:
 
 1. Apply the manifests of one of the examples:
