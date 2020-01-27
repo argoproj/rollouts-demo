@@ -1,0 +1,102 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: rollout-experiment
+spec:
+  replicas: 5
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: rollout-experiment
+  template:
+    metadata:
+      labels:
+        app: rollout-experiment
+    spec:
+      containers:
+      - name: main
+        image: argoproj/rollouts-demo:green
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
+  strategy:
+    canary:
+      canaryService: rollout-experiment-service-canary
+      steps:
+      - experiment:
+          duration: 60s
+          templates:
+          - name: experiment
+            specRef: canary
+          analyses:
+          - name: load-test
+            templateName: http-benchmark
+            args:
+            - name: host
+              value: rollout-experiment-service-canary
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rollout-experiment-service
+spec:
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: rollout-experiment
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rollout-experiment-service-canary
+spec:
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: rollout-experiment
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: http-benchmark
+spec:
+  args:
+  - name: host
+  metrics:
+  - name: http-benchmark
+    failureLimit: 3
+    interval: 5s
+    count: 5
+    provider:
+      job:
+        spec:
+          template:
+            spec:
+              containers:
+              - name: load-tester
+                image: argoproj/load-tester:latest
+                command: [sh, -xec]
+                args:
+                - |
+                  wrk -t1 -c1 -d5 -s report.lua http://{{args.host}}/color
+                  jq -e '.errors_ratio <= 0.05' report.json
+              restartPolicy: Never
+          backoffLimit: 0
