@@ -10,10 +10,10 @@ metadata:
     nginx.ingress.kubernetes.io/auth-url: http://$host/oauth2/auth
 spec:
   rules:
-  - host: rollout-experiment.dev.argoproj.io
+  - host: rollout-demo.dev.argoproj.io
     http:
       paths:
       - path: /
         backend:
-          serviceName: rollout-experiment-service
+          serviceName: rollout-demo-service
           servicePort: 80

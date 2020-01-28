@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: rollout-experiment
+  name: rollout-demo
 spec:
   replicas: 5
   revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app: rollout-experiment
+      app: rollout-demo
   template:
     metadata:
       labels:
-        app: rollout-experiment
+        app: rollout-demo
     spec:
       containers:
       - name: main
@@ -32,7 +32,7 @@ spec:
             cpu: 5m
   strategy:
     canary:
-      canaryService: rollout-experiment-service-canary
+      canaryService: rollout-demo-canary
       steps:
       - experiment:
           duration: 60s
@@ -44,13 +44,13 @@ spec:
             templateName: http-benchmark
             args:
             - name: host
-              value: rollout-experiment-service-canary
+              value: rollout-demo-canary
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: rollout-experiment-service
+  name: rollout-demo
 spec:
   ports:
   - port: 80
@@ -58,12 +58,12 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: rollout-experiment
+    app: rollout-demo
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: rollout-experiment-service-canary
+  name: rollout-demo-canary
 spec:
   ports:
   - port: 80
@@ -71,7 +71,7 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: rollout-experiment
+    app: rollout-demo
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
