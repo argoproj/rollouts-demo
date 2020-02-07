@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate-wavefront
+spec:
+  args:
+  - name: ingress
+  metrics:
+  - name: success-rate
+    interval: 10s
+    successCondition: result > 0.90
+    provider:
+      wavefront:
+        address: example.wavefront.com
+        query: |
+          sum(rate(
+            5m, ts("nginx.ingress.controller.requests.counter", ingress="{{args.ingress}}" and status="200"
+          ))) /
+          sum(rate(
+            5m, ts("nginx.ingress.controller.requests.counter", ingress="{{args.ingress}}"
+          )))
