@@ -2,7 +2,7 @@ FROM debian:10.1-slim
 
 RUN echo "===> Installing  tools..."  && \
     apt-get -y update && \
-    apt-get -y install build-essential curl jq && \
+    apt-get --no-install-recommends -y install build-essential curl jq && \
     \
     echo "===> Installing wrk" && \
     WRK_VERSION=$(curl -L https://github.com/wg/wrk/raw/master/CHANGES 2>/dev/null | \
