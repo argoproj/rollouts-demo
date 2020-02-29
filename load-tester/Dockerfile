@@ -17,7 +17,14 @@ RUN echo "===> Installing  tools..."  && \
     \
     echo "===> Cleaning the system" && \
     apt-get -f -y --auto-remove remove build-essential curl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /opt/wrk/
+    apt-get clean \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /opt/wrk \
+        /var/tmp/* \
+        /usr/share/man \
+        /usr/share/doc \
+        /usr/share/doc-base
 
 ADD report.lua .
