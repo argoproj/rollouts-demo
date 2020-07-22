@@ -16,9 +16,9 @@ import (
 	"syscall"
 	"time"
 
-        "github.com/prometheus/client_golang/prometheus"
-        "github.com/prometheus/client_golang/prometheus/promauto"
-        "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -32,12 +32,12 @@ const (
 )
 
 func recordMetrics() {
-        go func() {
-                for {
-                        opsProcessed.Inc()
-                        time.Sleep(2 * time.Second)
-                }
-        }()
+	go func() {
+		for {
+			opsProcessed.Inc()
+			time.Sleep(2 * time.Second)
+		}
+	}()
 }
 
 var (
@@ -53,49 +53,48 @@ var (
 	envErrorRate = os.Getenv("ERROR_RATE")
 	envLatency   = os.Getenv("LATENCY")
 
-        opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-                Name: "myapp_processed_ops_total",
-                Help: "The total number of processed events",
-        })
+	opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "myapp_processed_ops_total",
+		Help: "The total number of processed events",
+	})
 
-  counter = prometheus.NewCounter(
-     prometheus.CounterOpts{
-        Namespace: "golang",
-        Name:      "my_counter",
-        Help:      "This is my counter",
-     })
+	counter = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "golang",
+			Name:      "my_counter",
+			Help:      "This is my counter",
+		})
 
-  gauge = prometheus.NewGauge(
-     prometheus.GaugeOpts{
-        Namespace: "golang",
-        Name:      "my_gauge",
-        Help:      "This is my gauge",
-     })
+	gauge = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: "golang",
+			Name:      "my_gauge",
+			Help:      "This is my gauge",
+		})
 
-  histogram = prometheus.NewHistogram(
-     prometheus.HistogramOpts{
-        Namespace: "golang",
-        Name:      "my_histogram",
-        Help:      "This is my histogram",
-     })
+	histogram = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: "golang",
+			Name:      "my_histogram",
+			Help:      "This is my histogram",
+		})
 
-  summary = prometheus.NewSummary(
-     prometheus.SummaryOpts{
-        Namespace: "golang",
-        Name:      "my_summary",
-        Help:      "This is my summary",
-     })
-
+	summary = prometheus.NewSummary(
+		prometheus.SummaryOpts{
+			Namespace: "golang",
+			Name:      "my_summary",
+			Help:      "This is my summary",
+		})
 )
 
 func main() {
 
-  prometheus.MustRegister(counter)
-  prometheus.MustRegister(gauge)
-  prometheus.MustRegister(histogram)
-  prometheus.MustRegister(summary)
+	prometheus.MustRegister(counter)
+	prometheus.MustRegister(gauge)
+	prometheus.MustRegister(histogram)
+	prometheus.MustRegister(summary)
 
-        recordMetrics()
+	recordMetrics()
 	var (
 		listenAddr       string
 		terminationDelay int
@@ -109,7 +108,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	router := http.NewServeMux()
-        router.Handle("/metrics", promhttp.Handler())
+	router.Handle("/metrics", promhttp.Handler())
 
 	//router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
 	//router.HandleFunc("/color", getColor)
@@ -131,14 +130,14 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-     for {
-        counter.Add(rand.Float64() * 5)
-        gauge.Add(rand.Float64()*15 - 5)
-        histogram.Observe(rand.Float64() * 10)
-        summary.Observe(rand.Float64() * 10)
+		for {
+			counter.Add(rand.Float64() * 5)
+			gauge.Add(rand.Float64()*15 - 5)
+			histogram.Observe(rand.Float64() * 10)
+			summary.Observe(rand.Float64() * 10)
 
-        time.Sleep(time.Second)
-     }
+			time.Sleep(time.Second)
+		}
 		sig := <-quit
 		server.SetKeepAlivesEnabled(false)
 		log.Printf("Signal %v caught. Shutting down in %vs", sig, terminationDelay)
