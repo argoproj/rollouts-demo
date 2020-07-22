@@ -1,5 +1,7 @@
 #!/bin/bash
 
+IMAGE_NAMESPACE=docker.artifactory.a.intuit.com/sandbox/sandbox/asimhon-jul-02/service
+DOCKER_PUSH=true
 set -x -e
 
 strings=(

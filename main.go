@@ -15,6 +15,10 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+        "github.com/prometheus/client_golang/prometheus"
+        "github.com/prometheus/client_golang/prometheus/promauto"
+        "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -26,6 +30,15 @@ const (
 	// See: See: https://github.com/kubernetes/ingress-nginx/issues/3335#issuecomment-434970950
 	defaultTerminationDelay = 10
 )
+
+func recordMetrics() {
+        go func() {
+                for {
+                        opsProcessed.Inc()
+                        time.Sleep(2 * time.Second)
+                }
+        }()
+}
 
 var (
 	color  = os.Getenv("COLOR")
@@ -39,15 +52,56 @@ var (
 	}
 	envErrorRate = os.Getenv("ERROR_RATE")
 	envLatency   = os.Getenv("LATENCY")
+
+        opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+                Name: "myapp_processed_ops_total",
+                Help: "The total number of processed events",
+        })
+
+  counter = prometheus.NewCounter(
+     prometheus.CounterOpts{
+        Namespace: "golang",
+        Name:      "my_counter",
+        Help:      "This is my counter",
+     })
+
+  gauge = prometheus.NewGauge(
+     prometheus.GaugeOpts{
+        Namespace: "golang",
+        Name:      "my_gauge",
+        Help:      "This is my gauge",
+     })
+
+  histogram = prometheus.NewHistogram(
+     prometheus.HistogramOpts{
+        Namespace: "golang",
+        Name:      "my_histogram",
+        Help:      "This is my histogram",
+     })
+
+  summary = prometheus.NewSummary(
+     prometheus.SummaryOpts{
+        Namespace: "golang",
+        Name:      "my_summary",
+        Help:      "This is my summary",
+     })
+
 )
 
 func main() {
+
+  prometheus.MustRegister(counter)
+  prometheus.MustRegister(gauge)
+  prometheus.MustRegister(histogram)
+  prometheus.MustRegister(summary)
+
+        recordMetrics()
 	var (
 		listenAddr       string
 		terminationDelay int
 		numCPUBurn       string
 	)
-	flag.StringVar(&listenAddr, "listen-addr", ":8080", "server listen address")
+	flag.StringVar(&listenAddr, "listen-addr", ":8443", "server listen address")
 	flag.IntVar(&terminationDelay, "termination-delay", defaultTerminationDelay, "termination delay in seconds")
 	flag.StringVar(&numCPUBurn, "cpu-burn", "", "burn specified number of cpus (number or 'all')")
 	flag.Parse()
@@ -55,8 +109,17 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	router := http.NewServeMux()
-	router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
-	router.HandleFunc("/color", getColor)
+        router.Handle("/metrics", promhttp.Handler())
+
+	//router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
+	//router.HandleFunc("/color", getColor)
+
+	router.Handle("/", prometheus.InstrumentHandler(
+		"fileserver", http.FileServer(http.Dir("./")),
+	))
+	router.HandleFunc("/color", prometheus.InstrumentHandlerFunc(
+		"/color", getColor,
+	))
 
 	server := &http.Server{
 		Addr:    listenAddr,
@@ -68,6 +131,14 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
+     for {
+        counter.Add(rand.Float64() * 5)
+        gauge.Add(rand.Float64()*15 - 5)
+        histogram.Observe(rand.Float64() * 10)
+        summary.Observe(rand.Float64() * 10)
+
+        time.Sleep(time.Second)
+     }
 		sig := <-quit
 		server.SetKeepAlivesEnabled(false)
 		log.Printf("Signal %v caught. Shutting down in %vs", sig, terminationDelay)

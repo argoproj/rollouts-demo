@@ -22,7 +22,7 @@ all: build
 
 .PHONY: build
 build:
-	CGO_ENABLED=0 go build
+	CGO_ENABLED=0 GO111MODULE=on go build
 
 .PHONY: image
 image:
