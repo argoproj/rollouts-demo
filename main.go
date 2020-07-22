@@ -127,14 +127,6 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		for {
-			counter.Add(rand.Float64() * 5)
-			gauge.Add(rand.Float64()*15 - 5)
-			histogram.Observe(rand.Float64() * 10)
-			summary.Observe(rand.Float64() * 10)
-
-			time.Sleep(time.Second)
-		}
 		sig := <-quit
 		server.SetKeepAlivesEnabled(false)
 		log.Printf("Signal %v caught. Shutting down in %vs", sig, terminationDelay)
