@@ -100,7 +100,7 @@ func main() {
 		terminationDelay int
 		numCPUBurn       string
 	)
-	flag.StringVar(&listenAddr, "listen-addr", ":8443", "server listen address")
+	flag.StringVar(&listenAddr, "listen-addr", ":8080", "server listen address")
 	flag.IntVar(&terminationDelay, "termination-delay", defaultTerminationDelay, "termination delay in seconds")
 	flag.StringVar(&numCPUBurn, "cpu-burn", "", "burn specified number of cpus (number or 'all')")
 	flag.Parse()
