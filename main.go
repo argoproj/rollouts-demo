@@ -110,9 +110,6 @@ func main() {
 	router := http.NewServeMux()
 	router.Handle("/metrics", promhttp.Handler())
 
-	//router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
-	//router.HandleFunc("/color", getColor)
-
 	router.Handle("/", prometheus.InstrumentHandler(
 		"/", http.FileServer(http.Dir("./")),
 	))
