@@ -115,7 +115,7 @@ func main() {
 	//router.HandleFunc("/color", getColor)
 
 	router.Handle("/", prometheus.InstrumentHandler(
-		"fileserver", http.FileServer(http.Dir("./")),
+		"/", http.FileServer(http.Dir("./")),
 	))
 	router.HandleFunc("/color", prometheus.InstrumentHandlerFunc(
 		"/color", getColor,
