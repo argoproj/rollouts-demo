@@ -65,4 +65,5 @@ make release IMAGE_NAMESPACE=argoproj DOCKER_PUSH=true
 ## Application Metrics
 
 To get application metrics:
+
 ```curl http://localhost:8080/metrics```
