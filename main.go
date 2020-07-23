@@ -88,13 +88,12 @@ var (
 )
 
 func main() {
-
 	prometheus.MustRegister(counter)
 	prometheus.MustRegister(gauge)
 	prometheus.MustRegister(histogram)
 	prometheus.MustRegister(summary)
-
 	recordMetrics()
+
 	var (
 		listenAddr       string
 		terminationDelay int
@@ -109,7 +108,6 @@ func main() {
 
 	router := http.NewServeMux()
 	router.Handle("/metrics", promhttp.Handler())
-
 	router.Handle("/", prometheus.InstrumentHandler(
 		"/", http.FileServer(http.Dir("./")),
 	))
