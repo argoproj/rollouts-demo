@@ -2,7 +2,7 @@ FROM debian:10.1-slim
 
 RUN echo "===> Installing  tools..."  && \
     apt-get -y update && \
-    apt-get -y install build-essential curl jq && \
+    apt-get --no-install-recommends -y install build-essential curl jq && \
     \
     echo "===> Installing wrk" && \
     WRK_VERSION=$(curl -L https://github.com/wg/wrk/raw/master/CHANGES 2>/dev/null | \
@@ -17,7 +17,14 @@ RUN echo "===> Installing  tools..."  && \
     \
     echo "===> Cleaning the system" && \
     apt-get -f -y --auto-remove remove build-essential curl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /opt/wrk/
+    apt-get clean \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /opt/wrk \
+        /var/tmp/* \
+        /usr/share/man \
+        /usr/share/doc \
+        /usr/share/doc-base
 
 ADD report.lua .
