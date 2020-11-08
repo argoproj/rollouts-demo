@@ -1,0 +1,28 @@
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+  - name: golang
+    image: golang:1.15
+    command:
+    - cat
+    tty: true
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: Always
+    command:
+    - /busybox/cat
+    tty: true
+    volumeMounts:
+      - name: jenkins-docker-cfg
+        mountPath: /kaniko/.docker
+  volumes:
+  - name: jenkins-docker-cfg
+    projected:
+      sources:
+      - secret:
+          name: harbor-secret
+          items:
+            - key: .dockerconfigjson
+              path: config.json
