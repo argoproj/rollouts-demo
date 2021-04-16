@@ -13,12 +13,12 @@ spec:
     minReadySeconds: 10
     selector:
       matchLabels:
-        app: canary-demo
+        app: experiment-demo
         color: purple
     template:
       metadata:
         labels:
-          app: canary-demo
+          app: experiment-demo
           color: purple
       spec:
         containers:
@@ -34,12 +34,12 @@ spec:
     replicas: 2
     selector:
       matchLabels:
-        app: canary-demo
+        app: experiment-demo
         color: orange
     template:
       metadata:
         labels:
-          app: canary-demo
+          app: experiment-demo
           color: orange
       spec:
         containers:
