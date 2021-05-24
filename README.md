@@ -16,6 +16,8 @@ The following examples are provided:
 | [Canary Analysis](examples/analysis) | Rollout which performs canary analysis as part of the update. Uses the prometheus metric provider. |
 | [Experiment](examples/experiment) | Experiment which performs an A/B test. Performs analysis against the A and B using the job metric provider |
 | [Preview Stack Testing](examples/preview-testing) | Rollout which launches an experiment that tests a preview stack (which receives no production traffic) |
+| [Canary with istio (1)](examples/istio) | Rollout which uses host-level traffic splitting during update |
+| [Canary with istio (2)](examples/istio-subset) | Rollout which uses subset-level traffic splitting during update |
 
 Before running an example:
 
