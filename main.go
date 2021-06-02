@@ -23,7 +23,7 @@ const (
 	// (e.g. during a rolling update). This gives some time for ingress controllers to react to
 	// the Pod IP being removed from the Service's Endpoint list, which prevents traffic from being
 	// directed to terminated pods, which otherwise would cause timeout errors and/or request delays.
-	// See: See: https://github.com/kubernetes/ingress-nginx/issues/3335#issuecomment-434970950
+	// See: https://github.com/kubernetes/ingress-nginx/issues/3335#issuecomment-434970950
 	defaultTerminationDelay = 10
 )
 
@@ -46,10 +46,12 @@ func main() {
 		listenAddr       string
 		terminationDelay int
 		numCPUBurn       string
+		tls              bool
 	)
 	flag.StringVar(&listenAddr, "listen-addr", ":8080", "server listen address")
 	flag.IntVar(&terminationDelay, "termination-delay", defaultTerminationDelay, "termination delay in seconds")
 	flag.StringVar(&numCPUBurn, "cpu-burn", "", "burn specified number of cpus (number or 'all')")
+	flag.BoolVar(&tls, "tls", false, "Enable TLS (with self-signed certificate)")
 	flag.Parse()
 
 	rand.Seed(time.Now().UnixNano())
@@ -61,6 +63,13 @@ func main() {
 	server := &http.Server{
 		Addr:    listenAddr,
 		Handler: router,
+	}
+	if tls {
+		tlsConfig, err := CreateServerTLSConfig("", "", []string{"localhost", "rollouts-demo"})
+		if err != nil {
+			log.Fatalf("Could not generate TLS config: %v\n", err)
+		}
+		server.TLSConfig = tlsConfig
 	}
 
 	done := make(chan bool)
@@ -89,7 +98,13 @@ func main() {
 
 	cpuBurn(done, numCPUBurn)
 	log.Printf("Started server on %s", listenAddr)
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	var err error
+	if tls {
+		err = server.ListenAndServeTLS("", "")
+	} else {
+		err = server.ListenAndServe()
+	}
+	if err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Could not listen on %s: %v\n", listenAddr, err)
 	}
 
@@ -182,14 +197,14 @@ func printColor(colorToPrint string, w http.ResponseWriter, healthy bool) {
 	case "":
 		randomColor := randomColor()
 		if healthy {
-			log.Printf("Successful %s\n", randomColor)
+			log.Printf("200 - %s\n", randomColor)
 		} else {
 			log.Printf("500 - %s\n", randomColor)
 		}
 		fmt.Fprintf(w, "\"%s\"", randomColor)
 	default:
 		if healthy {
-			log.Printf("Successful %s\n", colorToPrint)
+			log.Printf("200 - %s\n", colorToPrint)
 		} else {
 			log.Printf("500 - %s\n", colorToPrint)
 		}
