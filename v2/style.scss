@@ -1,0 +1,26 @@
+body {
+  margin: 0;
+  padding: 0;
+  color: #a0a0a0;
+  background-color: #010101;
+}
+
+.spread {
+  display: flex;
+  &:first-child {
+    margin-right: auto;
+    align-self: flex-start;
+  }
+  &:last-child {
+    margin-left: auto;
+    align-self: flex-end;
+  }
+}
+
+.orange {
+  color: #ff823c;
+}
+
+.white {
+  color: white;
+}
