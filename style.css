@@ -66,27 +66,6 @@ h1 {
   margin-left: 5px;
   cursor: pointer;
 }
-.colors__selected {
-  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.5);
-}
-.colors__yellow {
-  background-color: #C9FF0D;
-}
-.colors__blue {
-  background-color: #0B9AFF;
-}
-.colors__orange {
-  background-color: #FB823D;
-}
-.colors__red {
-  background-color: #FB3D3D;
-}
-.colors__purple {
-  background-color: #6D3DFB;
-}
-.colors__green {
-  background-color: #3DFB78;
-}
 
 .slider {
   -webkit-appearance: none;
@@ -120,10 +99,30 @@ h1 {
   width: 20px;
   height: 20px;
   margin-right: 5px;
-  background-color: #a0a0a0;
+  background-color: #272727;
+  transition: background 0.5s ease;
 }
-.pixel--on {
-  background-color: yellow;
+
+.colors__selected, .pixel__selected {
+  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.5);
+}
+.colors__yellow, .colors__on, .pixel__yellow, .pixel__on {
+  background-color: #C9FF0D;
+}
+.colors__blue, .pixel__blue {
+  background-color: #0B9AFF;
+}
+.colors__orange, .pixel__orange {
+  background-color: #FB823D;
+}
+.colors__red, .pixel__red {
+  background-color: #FB3D3D;
+}
+.colors__purple, .pixel__purple {
+  background-color: #6D3DFB;
+}
+.colors__green, .pixel__green {
+  background-color: #3DFB78;
 }
 
 /*# sourceMappingURL=style.css.map */

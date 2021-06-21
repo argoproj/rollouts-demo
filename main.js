@@ -1,6 +1,8 @@
 const PX_PER_ROW = 20;
 const ROWS = 10;
-const REFRESH_INTERVAL_MS = 1000;
+const REFRESH_INTERVAL_MS = 100;
+const BAR_HEIGHT = 50;
+const MAX_BARS = 30;
 
 const colorsContainer = document.getElementById("colors");
 let availableColors = {};
@@ -17,6 +19,7 @@ class App {
 		this.stopButton.addEventListener("click", this.stop.bind(this));
 
 		this.grid = new Grid();
+		this.bars = new Bars();
 	}
 
 	start() {
@@ -36,15 +39,15 @@ class App {
 	}
 
 	req() {
-		if ((Object.keys(this.colors.available) || []).length == 0) {
+		const colors = Object.keys(this.colors.available) || [];
+		if (colors.length == 0) {
             return "[]"
         }
-        // let values = []
-        // this.availableColors.forEach(color => {
-        //     values.push(color.GetSliderValues())
-        // })
-
-		return "[]";
+        let values = []
+        colors.forEach(color => {
+            values.push(this.colors.available[color].values())
+        })
+		return JSON.stringify(values);
 	}
 
 	load(body) {
@@ -59,7 +62,10 @@ class App {
 	    	const {color, status} = res;
 	    	this.colors.add(color);
 	        var receiveTime = (new Date()).getTime();
-	        var responseTimeMs = receiveTime - sendTime;  
+	        var responseTimeMs = receiveTime - sendTime;
+
+	        this.grid.lightRand(color);
+	        this.bars.push({colors: this.colors.available});
 	    }).bind(this));
 	}
 }
@@ -96,40 +102,36 @@ class Colors {
 		this.available = {};
 		this.container = document.getElementById("colors");
 		this.selected = null;
-		this.colors = {};
 
     	this.latencySlider = new Slider("latency", "s", l => {
     		if (this.selected) {
-    			this.colors[this.selected] = {...this.colors[this.selected], latency: l}
+    			this.available[this.selected].latency = l;
     		}
     	});
 		this.errorSlider = new Slider("error", "%", e => {
     		if (this.selected) {
-    			this.colors[this.selected] = {...this.colors[this.selected], error: e}
+    			this.available[this.selected].error = e;
     		}
     	});
 	}
 
 	add(color) {
 		if (!this.available[color]) {
-			const el = document.createElement("div");
-	    	el.classList.add(`colors__${color}`);
-	    	el.addEventListener("click", () => this.setSelected(color));
-	    	this.container.appendChild(el);
-	    	this.colors[color] = {el};
+			const c = new Color(color, () => this.setSelected(color));
+	    	this.container.appendChild(c.container);
+	    	this.available[color] = c;
 		}
-		this.available[color] = true;
 	}
 
 	setSelected(color) {
 		if (this.selected !== color) {
 			if (this.selected) {
-				this.colors[this.selected].el.classList.remove('colors__selected');
+				this.available[this.selected].container.classList.remove('colors__selected');
 			}
 			this.selected = color;
-			this.colors[color].el.classList.add('colors__selected');
-			this.latencySlider.setValue(this.colors[color].latency);
-			this.errorSlider.setValue(this.colors[color].error);
+			this.available[color].container.classList.add('colors__selected');
+			this.latencySlider.setValue(this.available[color].latency);
+			this.errorSlider.setValue(this.available[color].error);
 		}
 	}
 
@@ -177,13 +179,24 @@ class Grid {
 		}
 	}
 
-	light(row, col) {
-		this.pixels[row][col].light();
+	light(row, col, color) {
+		let px = false;
+		if (this.pixels[row]) {
+			const px = this.pixels[row][col];
+			if (px) {
+				px.light(color, 1000 * 1800);
+			}
+		}
+	}
+
+	lightRand(color) {
+		const [x, y] = this.randCoord();
+		this.light(x, y, color);
 	}
 
 	randCoord() {
-		const row = Math.round(Math.random() * PX_PER_ROW);
-		const col = Math.round(Math.random() * ROWS);
+		const row = Math.round(Math.random() * ROWS);
+		const col = Math.round(Math.random() * PX_PER_ROW);
 		return [row, col];
 	}
 }
@@ -198,21 +211,40 @@ class Pixel {
 		this.container = container;
 	}
 
-	light() {
-		this.container.classList.add("pixel--on")
+	light(color, ms) {
+		const className = `pixel__${color || 'on'}`;
+		setTimeout(() => this.container.classList.remove(className), ms);
+		this.container.className = '';
+		this.container.classList.add('pixel');
+		this.container.classList.add(className);
 	}
 }
 
-const getBody = (color, error, latency) => {
-    
+class Bars {
+	constructor() {
+		this.container = document.getElementById("bars");
+		this.size = 0;
+	}
+
+	push(bar) {
+		let el = null;
+		if (this.size >= MAX_BARS) {
+			el = document.getElementById("bar--0");
+			this.size = this.size - 1;
+		} else {
+			el = document.createElement("div");
+			el.id = `bar--${this.size}`;
+		}
+		el.className = "bar";
+		for (const color of Object.keys(bar.colors)) {
+			const c = document.createElement("div");
+			c.className = `bar__${color}`;
+			el.appendChild(c);
+		}
+		this.size = this.size + 1;
+		this.container.append(el);
+	}
 }
-
-const toggle = (onButton, offButton) => {
-	onButton.classList.add("button--selected");
-	offButton.classList.remove("button--selected");
-}
-
-
 
 const app = new App();
 app.start();

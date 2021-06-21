@@ -3,6 +3,13 @@ $logo-size: 40px;
 $pixel-size: 20px;
 $grid-gutter: 5px;
 
+$red: #FB3D3D;
+$orange: #FB823D;
+$yellow: #C9FF0D;
+$green: #3DFB78;
+$blue: #0B9AFF;
+$purple: #6D3DFB;
+
 body {
   margin: 0;
   padding: 15px;
@@ -72,32 +79,6 @@ h1 {
     margin-left: 5px;
     cursor: pointer;
   }
-  &__selected {
-    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.5);
-  }
-  &__yellow {
-    background-color: #C9FF0D;
-  }
-
-  &__blue {
-    background-color: #0B9AFF;
-  }  
-
-  &__orange {
-    background-color: #FB823D;
-  }
-
-  &__red {
-    background-color: #FB3D3D;
-  }
-
-  &__purple {
-    background-color: #6D3DFB;
-  }
-
-    &__green {
-    background-color: #3DFB78;
-  }
 }
 
 .slider {
@@ -132,9 +113,35 @@ h1 {
   width: $pixel-size;
   height: $pixel-size;
   margin-right: $grid-gutter;
-  background-color: #a0a0a0;
+  background-color: #272727;
+  transition: background 0.5s ease;
+}
 
-  &--on {
-    background-color: yellow;
+.colors, .pixel {
+  &__selected {
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.5);
+  }
+  &__yellow, &__on {
+    background-color: $yellow;
+  }
+
+  &__blue {
+    background-color: $blue;
+  }  
+
+  &__orange {
+    background-color: $orange;
+  }
+
+  &__red {
+    background-color: $red;
+  }
+
+  &__purple {
+    background-color: $purple;
+  }
+
+    &__green {
+    background-color: $green;
   }
 }
