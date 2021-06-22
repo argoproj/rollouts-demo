@@ -1,8 +1,9 @@
-const ROWS = 8;
+const MIN_ROWS = 4;
+const MAX_ROWS = 14;
 
-const REFRESH_INTERVAL_MS = 5;
+const REFRESH_INTERVAL_MS = 20;
 
-const PIXEL_TIMEOUT = 3000;
+const PIXEL_TIMEOUT = 4000;
 const PIXEL_SIZE = 35;
 const PIXEL_GUTTER = 5;
 
@@ -21,7 +22,9 @@ class App {
 
 		const c = this.getColumns();
 		this.columns = c;
-		this.grid = new Grid(c);
+		const r = this.getRows();
+		this.rows = r;
+		this.grid = new Grid(r, c);
 		this.graph = new Graph(c);
 	}
 
@@ -40,7 +43,9 @@ class App {
 	resize() {
 		const c = this.getColumns();
 		this.columns = c;
-		this.grid.resize(c);
+		const r = this.getRows();
+		this.rows = r;
+		this.grid.resize(r, c);
 		this.graph.resize(c);
 		this.resizeButton.hide();
 	}
@@ -90,13 +95,20 @@ class App {
 	}
 
 	randCoord() {
-		const row = Math.round(Math.random() * ROWS);
+		const row = Math.round(Math.random() * this.rows);
 		const col = Math.round(Math.random() * this.columns);
 		return [row, col];
 	}
 
 	getColumns() {
 		return Math.round(window.innerWidth / (PIXEL_SIZE + PIXEL_GUTTER)) - 2;
+	}
+
+	getRows() {
+		var rows = Math.round(window.innerHeight / (PIXEL_SIZE + PIXEL_GUTTER)) - 10;
+		rows = Math.min(rows, MAX_ROWS);
+		rows = Math.max(rows, MIN_ROWS);
+		return rows;
 	}
 }
 
@@ -216,15 +228,15 @@ class Color {
 }
 
 class Grid {
-	constructor(c) {
+	constructor(r, c) {
 		this.container = document.getElementById("grid");
-		this.resize(c);
+		this.resize(r, c);
 	}
 
-	resize(col) {
+	resize(rows, col) {
 		this.container.innerHTML = null;
 		this.pixels = [];
-		for (const r of Array(ROWS).keys()) {
+		for (const r of Array(rows).keys()) {
 			this.pixels.push([]);
 			const row = document.createElement("div");
 			row.className = "row";
