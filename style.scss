@@ -129,6 +129,8 @@ h1 {
 .grid {
   margin: 0 auto;
   width: max-content;
+  margin-top: 2em;
+  margin-bottom: 2em;
 }
 
 .row {
@@ -144,25 +146,27 @@ h1 {
   transition: background 0.2s ease;
 }
 
-.bars {
-  height: 2 * $pixel-size;
+.graph {
   display: flex;
+  width: max-content;
   margin: 0 auto;
 }
 
 .bar {
   width: $pixel-size;
-  height: 2 * $pixel-size;
+  height: 3 * $pixel-size;
   display: flex;
   flex-direction: column;
+  margin-right: $grid-gutter;
+  background-color: #272727;
 
   &__fill {
     width: 100%;
-    background-color: red;
+    box-shadow: inset 0 2px 0 0 black;
   }
 }
 
-.colors, .pixel {
+.colors, .pixel, .graph {
   &__selected {
     box-shadow: inset 0 0 0 3px rgba(0,0,0,0.5);
   }

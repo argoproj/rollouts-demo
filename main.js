@@ -6,6 +6,8 @@ const PIXEL_TIMEOUT = 3000;
 const PIXEL_SIZE = 35;
 const PIXEL_GUTTER = 5;
 
+const BUCKET_SECONDS = 5;
+
 class App {
 	constructor() {
 		this.colors = new Colors();
@@ -17,7 +19,10 @@ class App {
 		this.resizeButton = new Button("resize", this.resize.bind(this));
 		this.resizeButton.hide();
 
-		this.grid = new Grid();
+		const c = this.getColumns();
+		this.columns = c;
+		this.grid = new Grid(c);
+		this.graph = new Graph(c);
 	}
 
 	stateChange() {
@@ -33,7 +38,10 @@ class App {
 	}
 
 	resize() {
-		this.grid.resize();
+		const c = this.getColumns();
+		this.columns = c;
+		this.grid.resize(c);
+		this.graph.resize(c);
 		this.resizeButton.hide();
 	}
 
@@ -75,9 +83,19 @@ class App {
 	    }).then((function(res) {
 	    	const {color, status} = res;
 	    	this.colors.add(color);
-	        this.grid.lightRand(color);
-	        this.grid.bars.record(color);
+	        this.grid.light(this.randCoord(), color);
+	        this.graph.record(color);
 	    }).bind(this));
+	}
+
+	randCoord() {
+		const row = Math.round(Math.random() * ROWS);
+		const col = Math.round(Math.random() * this.columns);
+		return [row, col];
+	}
+
+	getColumns() {
+		return Math.round(window.innerWidth / (PIXEL_SIZE + PIXEL_GUTTER)) - 2;
 	}
 }
 
@@ -197,18 +215,12 @@ class Color {
 }
 
 class Grid {
-	constructor() {
+	constructor(c) {
 		this.container = document.getElementById("grid");
-		this.bars = new Bars();
-		this.resize();
+		this.resize(c);
 	}
 
-	getColumns() {
-		return Math.round(window.innerWidth / (PIXEL_SIZE + PIXEL_GUTTER)) - 2;
-	}
-
-	resize() {
-		this.columns = this.getColumns();
+	resize(col) {
 		this.container.innerHTML = null;
 		this.pixels = [];
 		for (const r of Array(ROWS).keys()) {
@@ -216,17 +228,17 @@ class Grid {
 			const row = document.createElement("div");
 			row.className = "row";
 			row.id = `row-${r}`
-			for (const c of Array(this.columns).keys()) {
+			for (const c of Array(col).keys()) {
 				const px = new Pixel(r, c);
 				this.pixels[r][c] = px;
 				row.appendChild(px.container);
 			}
 			this.container.appendChild(row);
-		}
-		this.bars.resize(this.columns);
+		}		
 	}
 
-	light(row, col, color) {
+	light(coord, color) {
+		let [row, col] = coord;
 		let px = false;
 		if (this.pixels[row]) {
 			const px = this.pixels[row][col];
@@ -234,17 +246,6 @@ class Grid {
 				px.light(color, PIXEL_TIMEOUT);
 			}
 		}
-	}
-
-	lightRand(color) {
-		const [x, y] = this.randCoord();
-		this.light(x, y, color);
-	}
-
-	randCoord() {
-		const row = Math.round(Math.random() * ROWS);
-		const col = Math.round(Math.random() * this.columns);
-		return [row, col];
 	}
 }
 
@@ -275,28 +276,41 @@ class Pixel {
 	}
 }
 
-class Bars {
-	constructor() {
-		this.container = document.getElementById("bars");
+class Graph {
+	constructor(c) {
+		this.container = document.getElementById("graph");
+		this.cur = 0;
 		this.buckets = [];
-		this.buckets.push(new Bucket());
-	}
-
-	resize(columns) {
-		this.columns = columns;
-		const diff = this.buckets.length - this.columns;
-		if (diff > 0) {
-			this.buckets.splice(0, diff);
-		}
-		this.container.style.width = this.columns * (PIXEL_SIZE + PIXEL_GUTTER);
+		this.resize(c);
 	}
 
 	record(color) {
-		const curBucket = this.buckets[this.buckets.length - 1];
+		if (this.cur >= this.buckets.length) {
+			this.buckets.shift();
+			this.buckets.push(new Bucket());
+			this.cur--;
+		}
+		const curBucket = this.buckets[this.cur];
+		if (!curBucket) {
+			return;
+		}
 		const el = curBucket.drip(color);
 		if (el) {
-			this.container.appendChild(el);
+			this.cur += 1;
+			this.container.removeChild(this.container.lastChild);
+			this.container.prepend(el);
+		}
+	} 
+
+	resize(col) {
+		this.buckets = [];
+		this.container.innerHTML = null;
+		for (const c of Array(col).keys()) {
 			this.buckets.push(new Bucket());
+
+			const bar = document.createElement("div");
+			bar.classList.add('bar');
+			this.container.appendChild(bar);
 		}
 	}
 }
@@ -304,7 +318,7 @@ class Bars {
 class Bucket {
 	constructor() {
 		const reqPerSecond = 1000 / REFRESH_INTERVAL_MS;
-		this.capacity = 5 * reqPerSecond;
+		this.capacity = BUCKET_SECONDS * reqPerSecond;
 		this.level = 0;
 		this.amounts = {};
 	}
@@ -324,11 +338,11 @@ class Bucket {
 	full() {
 		const el = document.createElement("div");
 		el.classList.add('bar');
-		for (const c of Object.keys(this.amounts)) {
+		for (const c of Object.keys(this.amounts).sort((a, b) => a > b)) {
 			const fill = document.createElement("div");
 			fill.classList.add('bar__fill');
-			fill.classList.add(`bar__fill--${c}`);
-			fill.style.height = `${this.amounts[c]/this.capacity}`;
+			fill.classList.add(`graph__${c}`);
+			fill.style.height = `${100 * this.amounts[c]/this.capacity}%`;
 			el.appendChild(fill);
 		}
 		return el;
