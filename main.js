@@ -81,10 +81,11 @@ class App {
 	    .then(function(res) {
 	       return res.json().then(color => ({ color, res }))
 	    }).then((function(res) {
-	    	const {color, status} = res;
+	    	const {color} = res;
+	    	const error = res.res.status === 500;
 	    	this.colors.add(color);
-	        this.grid.light(this.randCoord(), color);
-	        this.graph.record(color);
+	        this.grid.light(this.randCoord(), color, error);
+	        this.graph.record(color, error);
 	    }).bind(this));
 	}
 
@@ -237,13 +238,13 @@ class Grid {
 		}		
 	}
 
-	light(coord, color) {
+	light(coord, color, error) {
 		let [row, col] = coord;
 		let px = false;
 		if (this.pixels[row]) {
 			const px = this.pixels[row][col];
 			if (px) {
-				px.light(color, PIXEL_TIMEOUT);
+				px.light(color, error, PIXEL_TIMEOUT);
 			}
 		}
 	}
@@ -265,14 +266,18 @@ class Pixel {
 
 	dim(color) {
 		this.container.classList.remove(this.genClassName(color));
+		this.container.classList.remove('pixel--error');
 	}
 
-	light(color, ms) {
+	light(color, error, ms) {
 		setTimeout(() => this.dim(color), ms);
 		const className = this.genClassName(color);
 		this.container.className = '';
 		this.container.classList.add('pixel');
 		this.container.classList.add(className);
+		if (error) {
+			this.container.classList.add('pixel--error');
+		}
 	}
 }
 
@@ -284,7 +289,7 @@ class Graph {
 		this.resize(c);
 	}
 
-	record(color) {
+	record(color, error) {
 		if (this.cur >= this.buckets.length) {
 			this.buckets.shift();
 			this.buckets.push(new Bucket());
@@ -294,7 +299,7 @@ class Graph {
 		if (!curBucket) {
 			return;
 		}
-		const el = curBucket.drip(color);
+		const el = curBucket.drip(color, error);
 		if (el) {
 			this.cur += 1;
 			this.container.removeChild(this.container.lastChild);
@@ -323,11 +328,15 @@ class Bucket {
 		this.amounts = {};
 	}
 
-	drip(color) {
+	drip(color, error) {
 		if (!this.amounts[color]) {
-			this.amounts[color] = 0;
+			this.amounts[color] = {ok: 0, error: 0};
 		}
-		this.amounts[color] += 1;
+		if (error) {
+			this.amounts[color].error += 1;
+		} else {
+			this.amounts[color].ok += 1;
+		}
 		this.level += 1;
 		if (this.level >= this.capacity) {
 			return this.full();
@@ -335,15 +344,29 @@ class Bucket {
 		return false;
 	}
 
+	genFill(amount, c, error) {
+		const fill = document.createElement("div");
+		fill.classList.add('bar__fill');
+		fill.classList.add(`graph__${c}`);
+		if (error) {
+			fill.classList.add(`bar__fill--error`);
+		}
+		fill.style.height = `${100 * amount/this.capacity}%`;
+		return fill;
+	}
+
 	full() {
 		const el = document.createElement("div");
 		el.classList.add('bar');
 		for (const c of Object.keys(this.amounts).sort((a, b) => a > b)) {
-			const fill = document.createElement("div");
-			fill.classList.add('bar__fill');
-			fill.classList.add(`graph__${c}`);
-			fill.style.height = `${100 * this.amounts[c]/this.capacity}%`;
-			el.appendChild(fill);
+			const okFill = this.genFill(this.amounts[c].ok, c, false);
+			el.appendChild(okFill);
+
+			const errors = this.amounts[c].error;
+			if (errors > 0) {
+				const errFill = this.genFill(this.amounts[c].error, c, true);
+				el.appendChild(errFill);
+			}
 		}
 		return el;
 	}
