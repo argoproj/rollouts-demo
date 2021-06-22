@@ -9,6 +9,8 @@ const PIXEL_GUTTER = 5;
 
 const BUCKET_SECONDS = 5;
 
+const COLORS = ["red", "orange", "yellow", "green", "blue", "purple"];
+
 class App {
 	constructor() {
 		this.colors = new Colors();
@@ -368,10 +370,15 @@ class Bucket {
 	full() {
 		const el = document.createElement("div");
 		el.classList.add('bar');
-		for (const c of Object.keys(this.amounts).sort((a, b) => a > b)) {
-			const okFill = this.genFill(this.amounts[c].ok, c, false);
-			el.appendChild(okFill);
-
+		for (const c of COLORS) {
+			if (!this.amounts[c]) {
+				continue
+			}
+			const ok = this.amounts[c].ok;
+			if (ok > 0) {
+				const okFill = this.genFill(this.amounts[c].ok, c, false);
+				el.appendChild(okFill);	
+			}
 			const errors = this.amounts[c].error;
 			if (errors > 0) {
 				const errFill = this.genFill(this.amounts[c].error, c, true);
