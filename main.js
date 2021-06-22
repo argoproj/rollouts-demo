@@ -221,8 +221,7 @@ class Color {
 		return {
 	        "color": this.name,
 	        "return500": parseInt(this.error, 10),
-	        "delayPercent": 100,
-	        "delayLength": parseInt(this.latency, 10)
+	        "delayLength": parseFloat(this.latency),
 	    }
 	}
 }
