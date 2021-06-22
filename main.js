@@ -64,6 +64,7 @@ class App {
 		this.on = false;
 		this.startButton.deselect();
 		this.stopButton.select();
+		window.stop()
 	}
 
 	req() {
@@ -298,36 +299,40 @@ class Graph {
 		this.cur = 0;
 		this.buckets = [];
 		this.resize(c);
+		setInterval(this.tick.bind(this), BUCKET_SECONDS * 1000)
 	}
 
 	record(color, error) {
-		if (this.cur >= this.buckets.length) {
-			this.buckets.shift();
-			this.buckets.push(new Bucket());
-			this.cur--;
-		}
-		const curBucket = this.buckets[this.cur];
+		const curBucket = this.buckets[this.buckets.length-1];
 		if (!curBucket) {
 			return;
 		}
-		const el = curBucket.drip(color, error);
-		if (el) {
-			this.cur += 1;
-			this.container.removeChild(this.container.lastChild);
-			this.container.prepend(el);
-		}
+		curBucket.drip(color, error);
 	} 
 
 	resize(col) {
-		this.buckets = [];
-		this.container.innerHTML = null;
-		for (const c of Array(col).keys()) {
-			this.buckets.push(new Bucket());
-
-			const bar = document.createElement("div");
-			bar.classList.add('bar');
-			this.container.appendChild(bar);
+		const bucketLen = this.buckets.length
+		if (col < bucketLen) {
+			for (let i = 0; i < bucketLen - col; i++) {
+				this.buckets.pop();
+				this.container.removeChild(this.container.firstChild);
+			}
+		} else if (col > bucketLen) {
+			for (let i = 0; i < col - bucketLen; i++) {
+				this.buckets.unshift(new Bucket());
+				const bar = document.createElement("div");
+				bar.classList.add('bar');
+				this.container.prepend(bar);
+			}
 		}
+	}
+
+	tick() {
+		this.container.removeChild(this.container.firstChild);
+		const el = this.buckets[this.buckets.length-1].full();
+		this.container.append(el);
+		this.buckets.shift();
+		this.buckets.push(new Bucket());
 	}
 }
 
@@ -335,7 +340,6 @@ class Bucket {
 	constructor() {
 		const reqPerSecond = 1000 / REFRESH_INTERVAL_MS;
 		this.capacity = BUCKET_SECONDS * reqPerSecond;
-		this.level = 0;
 		this.amounts = {};
 	}
 
@@ -348,11 +352,6 @@ class Bucket {
 		} else {
 			this.amounts[color].ok += 1;
 		}
-		this.level += 1;
-		if (this.level >= this.capacity) {
-			return this.full();
-		}
-		return false;
 	}
 
 	genFill(amount, c, error) {
