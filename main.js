@@ -1,25 +1,40 @@
-const PX_PER_ROW = 20;
-const ROWS = 10;
-const REFRESH_INTERVAL_MS = 100;
-const BAR_HEIGHT = 50;
-const MAX_BARS = 30;
+const ROWS = 8;
 
-const colorsContainer = document.getElementById("colors");
-let availableColors = {};
+const REFRESH_INTERVAL_MS = 5;
+
+const PIXEL_TIMEOUT = 3000;
+const PIXEL_SIZE = 35;
+const PIXEL_GUTTER = 5;
 
 class App {
 	constructor() {
 		this.colors = new Colors();
 		this.interval = null;
 
-		this.startButton = document.querySelector(".button--start");
-		this.startButton.addEventListener("click", this.start.bind(this));
+		this.startButton = new Button("start", this.start.bind(this));
+		this.stopButton = new Button("stop", this.stop.bind(this));
 
-		this.stopButton = document.querySelector(".button--stop");
-		this.stopButton.addEventListener("click", this.stop.bind(this));
+		this.resizeButton = new Button("resize", this.resize.bind(this));
+		this.resizeButton.hide();
 
 		this.grid = new Grid();
-		this.bars = new Bars();
+	}
+
+	stateChange() {
+		if (document.hidden) {
+			this.stop();
+		} else {
+			this.start();
+		}
+	}
+
+	resized() {
+		this.resizeButton.show();
+	}
+
+	resize() {
+		this.grid.resize();
+		this.resizeButton.hide();
 	}
 
 	start() {
@@ -27,15 +42,15 @@ class App {
 			this.load();
 		}, REFRESH_INTERVAL_MS);
 		this.on = true;
-		this.startButton.classList.add("button--selected");
-		this.stopButton.classList.remove("button--selected")
+		this.startButton.select();
+		this.stopButton.deselect();
 	}	
 
 	stop() {
 		clearInterval(this.interval);
 		this.on = false;
-		this.startButton.classList.remove("button--selected");
-		this.stopButton.classList.add("button--selected")
+		this.startButton.deselect();
+		this.stopButton.select();
 	}
 
 	req() {
@@ -51,7 +66,6 @@ class App {
 	}
 
 	load(body) {
-		var sendTime = (new Date()).getTime();
 	    fetch('./color', {
 	        method: "POST",
 	        body: this.req(),
@@ -61,12 +75,32 @@ class App {
 	    }).then((function(res) {
 	    	const {color, status} = res;
 	    	this.colors.add(color);
-	        var receiveTime = (new Date()).getTime();
-	        var responseTimeMs = receiveTime - sendTime;
-
 	        this.grid.lightRand(color);
-	        this.bars.push({colors: this.colors.available});
+	        this.grid.bars.record(color);
 	    }).bind(this));
+	}
+}
+
+class Button {
+	constructor(suffix, onClick) {
+		this.container = document.querySelector(`.button--${suffix}`);
+		this.container.addEventListener("click", onClick);
+	}
+
+	select() {
+		this.container.classList.add("button--selected");
+	}
+
+	deselect() {
+		this.container.classList.remove("button--selected");
+	}
+
+	hide() {
+		this.container.style.visibility = "hidden";
+	}
+
+	show() {
+		this.container.style.visibility = "visible";
 	}
 }
 
@@ -117,13 +151,14 @@ class Colors {
 
 	add(color) {
 		if (!this.available[color]) {
-			const c = new Color(color, () => this.setSelected(color));
+			const c = new Color(color, () => this.select(color));
 	    	this.container.appendChild(c.container);
 	    	this.available[color] = c;
+	    	this.select(color);
 		}
 	}
 
-	setSelected(color) {
+	select(color) {
 		if (this.selected !== color) {
 			if (this.selected) {
 				this.available[this.selected].container.classList.remove('colors__selected');
@@ -164,19 +199,31 @@ class Color {
 class Grid {
 	constructor() {
 		this.container = document.getElementById("grid");
+		this.bars = new Bars();
+		this.resize();
+	}
+
+	getColumns() {
+		return Math.round(window.innerWidth / (PIXEL_SIZE + PIXEL_GUTTER)) - 2;
+	}
+
+	resize() {
+		this.columns = this.getColumns();
+		this.container.innerHTML = null;
 		this.pixels = [];
 		for (const r of Array(ROWS).keys()) {
 			this.pixels.push([]);
 			const row = document.createElement("div");
 			row.className = "row";
 			row.id = `row-${r}`
-			for (const c of Array(PX_PER_ROW).keys()) {
+			for (const c of Array(this.columns).keys()) {
 				const px = new Pixel(r, c);
 				this.pixels[r][c] = px;
 				row.appendChild(px.container);
 			}
 			this.container.appendChild(row);
 		}
+		this.bars.resize(this.columns);
 	}
 
 	light(row, col, color) {
@@ -184,7 +231,7 @@ class Grid {
 		if (this.pixels[row]) {
 			const px = this.pixels[row][col];
 			if (px) {
-				px.light(color, 1000 * 1800);
+				px.light(color, PIXEL_TIMEOUT);
 			}
 		}
 	}
@@ -196,7 +243,7 @@ class Grid {
 
 	randCoord() {
 		const row = Math.round(Math.random() * ROWS);
-		const col = Math.round(Math.random() * PX_PER_ROW);
+		const col = Math.round(Math.random() * this.columns);
 		return [row, col];
 	}
 }
@@ -211,9 +258,17 @@ class Pixel {
 		this.container = container;
 	}
 
+	genClassName(color) {
+		return `pixel__${color || 'on'}`;
+	}
+
+	dim(color) {
+		this.container.classList.remove(this.genClassName(color));
+	}
+
 	light(color, ms) {
-		const className = `pixel__${color || 'on'}`;
-		setTimeout(() => this.container.classList.remove(className), ms);
+		setTimeout(() => this.dim(color), ms);
+		const className = this.genClassName(color);
 		this.container.className = '';
 		this.container.classList.add('pixel');
 		this.container.classList.add(className);
@@ -223,28 +278,64 @@ class Pixel {
 class Bars {
 	constructor() {
 		this.container = document.getElementById("bars");
-		this.size = 0;
+		this.buckets = [];
+		this.buckets.push(new Bucket());
 	}
 
-	push(bar) {
-		let el = null;
-		if (this.size >= MAX_BARS) {
-			el = document.getElementById("bar--0");
-			this.size = this.size - 1;
-		} else {
-			el = document.createElement("div");
-			el.id = `bar--${this.size}`;
+	resize(columns) {
+		this.columns = columns;
+		const diff = this.buckets.length - this.columns;
+		if (diff > 0) {
+			this.buckets.splice(0, diff);
 		}
-		el.className = "bar";
-		for (const color of Object.keys(bar.colors)) {
-			const c = document.createElement("div");
-			c.className = `bar__${color}`;
-			el.appendChild(c);
+		this.container.style.width = this.columns * (PIXEL_SIZE + PIXEL_GUTTER);
+	}
+
+	record(color) {
+		const curBucket = this.buckets[this.buckets.length - 1];
+		const el = curBucket.drip(color);
+		if (el) {
+			this.container.appendChild(el);
+			this.buckets.push(new Bucket());
 		}
-		this.size = this.size + 1;
-		this.container.append(el);
+	}
+}
+
+class Bucket {
+	constructor() {
+		const reqPerSecond = 1000 / REFRESH_INTERVAL_MS;
+		this.capacity = 5 * reqPerSecond;
+		this.level = 0;
+		this.amounts = {};
+	}
+
+	drip(color) {
+		if (!this.amounts[color]) {
+			this.amounts[color] = 0;
+		}
+		this.amounts[color] += 1;
+		this.level += 1;
+		if (this.level >= this.capacity) {
+			return this.full();
+		}
+		return false;
+	}
+
+	full() {
+		const el = document.createElement("div");
+		el.classList.add('bar');
+		for (const c of Object.keys(this.amounts)) {
+			const fill = document.createElement("div");
+			fill.classList.add('bar__fill');
+			fill.classList.add(`bar__fill--${c}`);
+			fill.style.height = `${this.amounts[c]/this.capacity}`;
+			el.appendChild(fill);
+		}
+		return el;
 	}
 }
 
 const app = new App();
 app.start();
+window.addEventListener("resize", app.resized.bind(app));
+document.addEventListener("visibilitychange", app.stateChange.bind(app));

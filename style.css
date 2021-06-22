@@ -11,14 +11,32 @@ h1 {
   font-size: 20px;
 }
 
+.flex {
+  display: flex;
+}
+
 .logo {
   width: 40px;
-  height: 40px;
+}
+
+.header {
+  max-width: 700px;
+  margin: 0 auto;
+  margin-bottom: 1em;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  justify-content: center;
 }
 
 .control {
+  min-width: 500px;
   width: 500px;
   margin-bottom: 0.5em;
+  margin-right: 20px;
 }
 
 .spread {
@@ -46,6 +64,10 @@ h1 {
 }
 .button--selected {
   box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.3);
+}
+.button--resize {
+  background-color: #FB823D;
+  margin-right: 7px;
 }
 
 .orange {
@@ -90,17 +112,39 @@ h1 {
   border-top: none;
 }
 
+.grid {
+  margin: 0 auto;
+  width: max-content;
+}
+
 .row {
   display: flex;
   margin-bottom: 5px;
 }
 
 .pixel {
-  width: 20px;
-  height: 20px;
+  width: 35px;
+  height: 35px;
   margin-right: 5px;
   background-color: #272727;
-  transition: background 0.5s ease;
+  transition: background 0.2s ease;
+}
+
+.bars {
+  height: 70px;
+  display: flex;
+  margin: 0 auto;
+}
+
+.bar {
+  width: 35px;
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+}
+.bar__fill {
+  width: 100%;
+  background-color: red;
 }
 
 .colors__selected, .pixel__selected {

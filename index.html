@@ -5,34 +5,39 @@
     <link rel="stylesheet" href="style.css" type="text/css" />
   </head>
   <body>
-    <div class="control spread">
-      <h1>ARGO ROLLOUTS <span class="orange">DEMO</span></h1>
-      <img src="logo.png" class="logo" />
+    <div class="header spread">
+        <h1>ARGO ROLLOUTS <span class="orange">DEMO</span></h1>
+        <div class="flex">
+          <div class="button button--resize" id="resize">FIT</div>
+          <img src="logo.png" class="logo" />
+        </div>
     </div>
-    <div class="control spread">
-      <div>COLOR</div>
-      <div class="colors" id="colors"></div>
-    </div>
-    <div class="control spread">
-      <div class="button button--start">START</div>
-      <div class="button button--stop">STOP</div>
-    </div>
-    <div class="control">
+    <div class="controls">
       <div class="control spread">
-        <div>LATENCY</div>
-        <div class="white" id="latency-label">0.0s</div>
+        <div>COLOR</div>
+        <div class="colors" id="colors"></div>
       </div>
-      <input type="range" min="0" max="5" value="0" class="slider" id="latency" step="0.1">
-    </div>
-    <div class="control">
       <div class="control spread">
-        <div>ERROR</div>
-        <div class="white" id="error-label">0.0s</div>
+        <div class="button button--start">START</div>
+        <div class="button button--stop">STOP</div>
       </div>
-      <input type="range" min="0" max="100" value="0" class="slider" id="error" step="1">
+      <div class="control">
+        <div class="control spread">
+          <div>LATENCY</div>
+          <div class="white" id="latency-label">0.0s</div>
+        </div>
+        <input type="range" min="0" max="5" value="0" class="slider" id="latency" step="0.1">
+      </div>
+      <div class="control">
+        <div class="control spread">
+          <div>ERROR</div>
+          <div class="white" id="error-label">0.0s</div>
+        </div>
+        <input type="range" min="0" max="100" value="0" class="slider" id="error" step="1">
+      </div>
     </div>
-    <div id="grid"></div>
-    <div id="bars"></div>
+    <div id="grid" class="grid"></div>
+    <div id="bars" class="bars"></div>
   </body>
   <script src="main.js"></script>
 </html>
