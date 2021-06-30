@@ -27,7 +27,7 @@ spec:
             cpu: 5m
   strategy:
     canary:
-      analysis will be performed in background, while rollout is progressing through its steps
+      # analysis will be performed in background, while rollout is progressing through its steps
       analysis:
         startingStep: 1   # index of step list, of when to start this analysis
         templates:
