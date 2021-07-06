@@ -15,6 +15,10 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -26,6 +30,15 @@ const (
 	// See: https://github.com/kubernetes/ingress-nginx/issues/3335#issuecomment-434970950
 	defaultTerminationDelay = 10
 )
+
+func recordMetrics() {
+	go func() {
+		for {
+			opsProcessed.Inc()
+			time.Sleep(2 * time.Second)
+		}
+	}()
+}
 
 var (
 	color  = os.Getenv("COLOR")
@@ -39,9 +52,48 @@ var (
 	}
 	envErrorRate = os.Getenv("ERROR_RATE")
 	envLatency   = os.Getenv("LATENCY")
+
+	opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "myapp_processed_ops_total",
+		Help: "The total number of processed events",
+	})
+
+	counter = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "golang",
+			Name:      "my_counter",
+			Help:      "This is my counter",
+		})
+
+	gauge = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: "golang",
+			Name:      "my_gauge",
+			Help:      "This is my gauge",
+		})
+
+	histogram = prometheus.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: "golang",
+			Name:      "my_histogram",
+			Help:      "This is my histogram",
+		})
+
+	summary = prometheus.NewSummary(
+		prometheus.SummaryOpts{
+			Namespace: "golang",
+			Name:      "my_summary",
+			Help:      "This is my summary",
+		})
 )
 
 func main() {
+	prometheus.MustRegister(counter)
+	prometheus.MustRegister(gauge)
+	prometheus.MustRegister(histogram)
+	prometheus.MustRegister(summary)
+	recordMetrics()
+
 	var (
 		listenAddr       string
 		terminationDelay int
@@ -57,8 +109,13 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	router := http.NewServeMux()
-	router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
-	router.HandleFunc("/color", getColor)
+	router.Handle("/metrics", promhttp.Handler())
+	router.Handle("/", prometheus.InstrumentHandler(
+		"/", http.FileServer(http.Dir("./")),
+	))
+	router.HandleFunc("/color", prometheus.InstrumentHandlerFunc(
+		"/color", getColor,
+	))
 
 	server := &http.Server{
 		Addr:    listenAddr,
