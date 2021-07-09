@@ -1,39 +1,43 @@
 <!DOCTYPE html>
-<html lang="en" style="height:100%">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" type="text/css" href="main.css">
-    <title>Argo Rollouts</title>
-</head>
-<body>
-    <img class="logo" src="./logo.png"/>
-
-    <div class="textbox">
-        <h3 id="currentColor" style="text-align: center">Color<h3>
-        <label>500 Error Rate:</label> <output name="output500" id="output500">0%</output>
-        <input type="range" min="0" max="100" value="0" class="slider" id="return500" onchange="output500.value = return500.value + '%'">
-        <label>Latency Rate:</label> <output name="delayPercentText" id="delayPercentText">0%</output>
-        <input type="range" min="0" max="100" value="0" class="slider" id="delayPercent" onchange="delayPercentText.value = delayPercent.value + '%'">
-        <label>Latency Seconds:</label> 
-        <input type="text" value="0" id="delayLength">
-        <div id="availableColors"></div>
+<html>
+  <head>
+    <title>Rollouts Demo</title>
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+  <body>
+    <div class="header spread">
+        <img src="logo.png" class="logo" />
+        <h1>ARGO ROLLOUTS <span class="orange">DEMO</span></h1>
+        <div class="flex">
+          <div class="button button--resize" id="resize">FIT</div>
+        </div>
     </div>
-</body>
-<script type="module">
-    import {App} from './app.js';
-    const canvas = document.createElement("canvas");
-    document.body.appendChild(canvas); 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    window.addEventListener('resize', function() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    });
-
-    new App(canvas).run();
-</script>
-
+    <div class="controls">
+      <div class="control spread">
+        <div>COLOR</div>
+        <div class="colors" id="colors"></div>
+      </div>
+      <div class="control spread">
+        <div class="button button--start">START</div>
+        <div class="button button--stop">STOP</div>
+      </div>
+      <div class="control">
+        <div class="control spread">
+          <div>LATENCY</div>
+          <div class="white" id="latency-label">0.0s</div>
+        </div>
+        <input type="range" min="0" max="5" value="0" class="slider" id="latency" step="0.1">
+      </div>
+      <div class="control">
+        <div class="control spread">
+          <div>ERROR</div>
+          <div class="white" id="error-label">0.0s</div>
+        </div>
+        <input type="range" min="0" max="100" value="0" class="slider" id="error" step="1">
+      </div>
+    </div>
+    <div id="grid" class="grid"></div>
+    <div id="graph" class="graph"></div>
+  </body>
+  <script src="main.js"></script>
 </html>
