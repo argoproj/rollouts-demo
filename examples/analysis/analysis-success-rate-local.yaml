@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate-local
+spec:
+  metrics:
+  - name: canary-success-rate
+    interval: 10s
+    successCondition: len(result) == 0 || result[0] > 0.90
+    initialDelay: 30s
+    provider:
+      prometheus:
+        address: http://prometheus.istio-system.svc.cluster.local:9090
+        query: >+
+          sum(
+            rate(http_requests_total{job="rollouts-demo-preview",status!~"[4-5].*"}[20s]))
+            /
+            sum(rate(http_requests_total{job="rollouts-demo-preview"}[20s])
+          )
