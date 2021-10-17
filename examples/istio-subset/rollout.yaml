@@ -34,7 +34,7 @@ spec:
         - templateName: istio-success-rate
         args:             # arguments allow AnalysisTemplates to be re-used
         - name: service 
-          value: canary
+          value: istio-rollout
         - name: namespace
           valueFrom:
             fieldRef:
