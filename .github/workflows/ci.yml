@@ -23,7 +23,7 @@ jobs:
           export VERSION=$(cat service.yaml)
           export CF_IMAGE=$DOCKERHUB_USERNAME/${{ github.event.repository.name }}:$VERSION
           echo "CF_IMAGE=$CF_IMAGE" >> $GITHUB_ENV
-          docker build . --file Dockerfile --tag $CF_IMAGE && docker push $CF_IMAGE
+          docker build . --file Dockerfile --build-arg COLOR=$TYPE --tag $CF_IMAGE && docker push $CF_IMAGE
       - name: Report image
         with:
           CF_IMAGE: ${{ env.CF_IMAGE }}
