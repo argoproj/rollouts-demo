@@ -38,11 +38,11 @@ jobs:
       - name: Checkout csdp-salesdemo_applications
         uses: actions/checkout@v3
         with:
-          repository: ziv-codefresh/csdp-salesdemo_applications # change to real repo
+          repository: idan-codefresh/canary-rollout # change to real repo
           path: .
       - name: Update application version
         run: |
-          IMAGE=${{ env.CF_IMAGE }} yq -i '.spec.template.spec.containers.[0].image = strenv(IMAGE)' hello-world/deployment.yaml
+          IMAGE=${{ env.CF_IMAGE }} yq -i '.spec.template.spec.containers.[0].image = strenv(IMAGE)' canary-rollout.yaml
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
