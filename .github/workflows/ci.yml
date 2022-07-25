@@ -1,0 +1,65 @@
+name: Github-action-demo
+
+on:
+  push:
+    branches: [ master ]
+jobs:
+  build:
+    environment:
+      name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & push the Docker image
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          export VERSION=$(cat service.yaml)
+          export CF_IMAGE=$DOCKERHUB_USERNAME/${{ github.event.repository.name }}:$VERSION
+          echo "CF_IMAGE=$CF_IMAGE" >> $GITHUB_ENV
+          docker build . --file Dockerfile --tag $CF_IMAGE && docker push $CF_IMAGE
+      - name: Report image
+        with:
+          CF_IMAGE: ${{ env.CF_IMAGE }}
+          CF_HOST: "https://mr-59d37837920f8900018a6183-eb90894.cf-cd.com"
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          CF_CONTAINER_REGISTRY_INTEGRATION: "docker"
+          CF_JIRA_INTEGRATION: "jira"
+          CF_GITHUB_TOKEN: ${{ secrets.PAT }}
+          CF_JIRA_MESSAGE: "${{ github.event.head_commit.message }}"
+          CF_JIRA_PROJECT_PREFIX: "CR"
+        uses: codefresh-io/codefresh-report-image@latest
+      - name: Checkout csdp-salesdemo_applications
+        uses: actions/checkout@v3
+        with:
+          repository: ziv-codefresh/csdp-salesdemo_applications # change to real repo
+          path: .
+      - name: Update application version
+        run: |
+          IMAGE=${{ env.CF_IMAGE }} yq -i '.spec.template.spec.containers.[0].image = strenv(IMAGE)' hello-world/deployment.yaml
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.PAT }}
+          commit-message: Update version
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: false
+          branch: update-application-version
+          delete-branch: true
+          title: 'Update application version'
+          body: |
+            Update deployment version
+            - Updated new version for hello-world application
+          labels: |
+            automated pr
+          assignees: ziv-codefresh
+          reviewers: ziv-codefresh
+          draft: false
+
