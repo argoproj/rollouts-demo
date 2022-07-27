@@ -54,7 +54,7 @@ jobs:
           CF_JIRA_MESSAGE: "${{ github.event.head_commit.message }}"
 
 
-          uses: codefresh-io/codefresh-report-image@latest
+        uses: codefresh-io/codefresh-report-image@latest
       #- name: Report image
        # with:
         #  CF_IMAGE: ${{ env.CF_IMAGE }}
