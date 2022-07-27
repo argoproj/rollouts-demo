@@ -24,17 +24,48 @@ jobs:
           export CF_IMAGE=$DOCKERHUB_USERNAME/${{ github.event.repository.name }}:$VERSION
           echo "CF_IMAGE=$CF_IMAGE" >> $GITHUB_ENV
           docker build . --file Dockerfile --build-arg COLOR=$VERSION --tag $CF_IMAGE && docker push $CF_IMAGE
-      - name: Report image
+      
+      - name: report image
         with:
-          CF_IMAGE: ${{ env.CF_IMAGE }}
-          CF_HOST: "https://mr-5f04515c6f790a046303eb5a-d0a662e.cf-cd.com"
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
-          CF_CONTAINER_REGISTRY_INTEGRATION: "docker"
-          CF_JIRA_INTEGRATION: "jira"
-          CF_GITHUB_TOKEN: ${{ secrets.PAT }}
+          # Name of runtime to implement the enrichment
+          CF_HOST: 'https://mr-62c6d2bf754487f285b9b61b-7f614b0.cf-cd.com'
+
+          # Codefresh API key !! Committing a plain text token is a security risk. We highly recommend using an encrypted secrets. !!
+          # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
+          CF_API_KEY: ${{secrets.CF_API_KEY}}
+
+          # Name of Container registry integration
+          CF_CONTAINER_REGISTRY_INTEGRATION: 'docker'
+
+          # Name of Jira integration
+          CF_JIRA_INTEGRATION: 'jira'
+
+          # Image path to enrich
+          CF_IMAGE: ${{env.CI_image}}
+
+          # GitHub Access token !! Committing a plain text token is a security risk. We highly recommend using an encrypted secrets. !!
+          # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
+          CF_GITHUB_TOKEN: ${{secrets.PAT}}
+
+          # Jira project filter
+          CF_JIRA_PROJECT_PREFIX: 'CR'
+
+          # String starting with the issue ID to associate with image
           CF_JIRA_MESSAGE: "${{ github.event.head_commit.message }}"
-          CF_JIRA_PROJECT_PREFIX: "CR"
-        uses: codefresh-io/codefresh-report-image@latest
+
+
+          uses: codefresh-io/codefresh-report-image@latest
+      #- name: Report image
+       # with:
+        #  CF_IMAGE: ${{ env.CF_IMAGE }}
+         # CF_HOST: "https://mr-5f04515c6f790a046303eb5a-d0a662e.cf-cd.com"
+          #CF_API_KEY: ${{ secrets.CF_API_KEY }}
+       #   CF_CONTAINER_REGISTRY_INTEGRATION: "docker"
+        #  CF_JIRA_INTEGRATION: "jira"
+         # CF_GITHUB_TOKEN: ${{ secrets.PAT }}
+        #  CF_JIRA_MESSAGE: "${{ github.event.head_commit.message }}"
+        #  CF_JIRA_PROJECT_PREFIX: "CR"
+       # uses: codefresh-io/codefresh-report-image@latest
       - name: Checkout csdp-salesdemo_applications
         uses: actions/checkout@v3
         with:
