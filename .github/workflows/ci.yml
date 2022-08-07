@@ -1,8 +1,11 @@
 name: Github-action-demo
 
 on:
-  push:
-    branches: [ master ]
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
 jobs:
   build:
     environment:
@@ -51,7 +54,8 @@ jobs:
           CF_JIRA_PROJECT_PREFIX: 'CR'
 
           # String starting with the issue ID to associate with image
-          CF_JIRA_MESSAGE: "${{ github.event.head_commit.message }}"
+          CF_JIRA_MESSAGE: "${{ github.event.pull_request.head.ref }}"
+          CF_GIT_BRANCH: "${{ github.event.pull_request.head.ref }}"
 
 
         uses: codefresh-io/codefresh-report-image@latest
