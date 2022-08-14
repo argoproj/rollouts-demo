@@ -31,7 +31,7 @@ jobs:
       - name: report image
         with:
           # Name of runtime to implement the enrichment
-          CF_HOST: 'https://mr-62c6d2bf754487f285b9b61b-7f614b0.cf-cd.com'
+          CF_RUNTIME_NAME: 'codefresh-hosted'
 
           # Codefresh API key !! Committing a plain text token is a security risk. We highly recommend using an encrypted secrets. !!
           # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
