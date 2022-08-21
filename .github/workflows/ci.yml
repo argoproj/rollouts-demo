@@ -46,8 +46,8 @@ jobs:
           CF_JIRA_INTEGRATION: 'jira'
 
           # Image path to enrich
-          CF_IMAGE: ${{env.CF_IMAGE}}
-
+#           CF_IMAGE: ${{env.CF_IMAGE}}
+          CF_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:$VERSION
           # GitHub Access token !! Committing a plain text token is a security risk. We highly recommend using an encrypted secrets. !!
           # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
           CF_GITHUB_TOKEN: ${{secrets.PAT}}
