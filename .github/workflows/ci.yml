@@ -29,7 +29,7 @@ jobs:
           export CF_IMAGE=$DOCKERHUB_USERNAME/${{ github.event.repository.name }}:$VERSION
           echo "CF_IMAGE=$CF_IMAGE" >> $GITHUB_ENV
           docker build . --file Dockerfile --build-arg COLOR=$VERSION --tag $CF_IMAGE && docker push $CF_IMAGE
-          echo ${{env.CF_IMAGE}}
+          echo $CF_IMAGE
       - name: report image
         with:
           # Runtime to use for the enrichment.
@@ -40,6 +40,7 @@ jobs:
           CF_API_KEY: ${{secrets.CF_API_KEY}}
 
           # Image reported and enriched in Codefresh. Pass the [account-name]/[image-name]:[tag] built in your CI.
+
           CF_IMAGE: "${{env.CF_IMAGE}}"
 
           # Container registry integration where the image is stored.
