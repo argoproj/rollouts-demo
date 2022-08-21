@@ -47,7 +47,8 @@ jobs:
 
           # GitHub authentication token. !! Committing a plain text token is a security risk. We highly recommend using encrypted secrets. !!
           # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
-          CF_GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          #CF_GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          CF_GITHUB_TOKEN: ${{secrets.PAT}}
 
           # Issue tracking integration to use to enrich the image.
           CF_JIRA_INTEGRATION: 'jira'
