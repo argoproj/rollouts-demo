@@ -40,7 +40,7 @@ jobs:
           CF_API_KEY: ${{secrets.CF2_API_KEY}}
 
           # Image reported and enriched in Codefresh. Pass the [account-name]/[image-name]:[tag] built in your CI.
-          CF_IMAGE: ${{CF_IMAGE}}
+          CF_IMAGE: ${{env.CF_IMAGE}}
 
           # Container registry integration where the image is stored.
           CF_CONTAINER_REGISTRY_INTEGRATION: 'docker'
