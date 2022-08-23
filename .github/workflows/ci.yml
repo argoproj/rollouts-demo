@@ -60,9 +60,7 @@ jobs:
 
           # Search for issue IDs matching this string to associate with your image.
           CF_JIRA_MESSAGE: ${{ github.event.pull_request.head.ref }}
-
-
-  uses: codefresh-io/codefresh-report-image@latest
+        uses: codefresh-io/codefresh-report-image@latest
      # - name: report image
       #  with:
           # Name of runtime to implement the enrichment
@@ -97,17 +95,7 @@ jobs:
 
 
     #    uses: codefresh-io/codefresh-report-image@latest
-      #- name: Report image
-       # with:
-        #  CF_IMAGE: ${{ env.CF_IMAGE }}
-         # CF_HOST: "https://mr-5f04515c6f790a046303eb5a-d0a662e.cf-cd.com"
-          #CF_API_KEY: ${{ secrets.CF_API_KEY }}
-       #   CF_CONTAINER_REGISTRY_INTEGRATION: "docker"
-        #  CF_JIRA_INTEGRATION: "jira"
-         # CF_GITHUB_TOKEN: ${{ secrets.PAT }}
-        #  CF_JIRA_MESSAGE: "${{ github.event.head_commit.message }}"
-        #  CF_JIRA_PROJECT_PREFIX: "CR"
-       # uses: codefresh-io/codefresh-report-image@latest
+      
       - name: Checkout csdp-salesdemo_applications
         uses: actions/checkout@v3
         with:
