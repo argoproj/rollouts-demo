@@ -35,7 +35,7 @@ jobs:
 
           # API key for authentication to Codefresh. !! Committing a plain text token is a security risk. We highly recommend using encrypted secrets. !!
           # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
-          CF_API_KEY: ${{secrets.CF2_API_KEY}}
+          CF_API_KEY: ${{secrets.CF_BB_API_KEY}}
 
           # Image reported and enriched in Codefresh. Pass the [account-name]/[image-name]:[tag] built in your CI.
           CF_IMAGE: ${{env.CF_IMAGE}}
