@@ -4,14 +4,17 @@ metadata:
   name: bluegreen-demo-preview
   annotations:
     ingress.kubernetes.io/proxy-body-size: 100M
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: gce
     ingress.kubernetes.io/app-root: /
 spec:
   rules:
-  - host: blue-green-preview.dev.argoproj.io
+  - host: blue-green-preview.dev.jino.pl
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: bluegreen-demo-preview
-          servicePort: 80
+          service:
+            name: bluegreen-demo-preview
+            port:
+              number: 8088

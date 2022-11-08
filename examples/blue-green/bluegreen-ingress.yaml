@@ -1,17 +1,20 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: bluegreen-demo
   annotations:
     ingress.kubernetes.io/proxy-body-size: 100M
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: gce
     ingress.kubernetes.io/app-root: /
 spec:
   rules:
-  - host: blue-green.dev.argoproj.io
+  - host: blue-green.dev.jino.pl
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: bluegreen-demo
-          servicePort: 80
+          service:
+            name: bluegreen-demo
+            port:
+              number: 8081
