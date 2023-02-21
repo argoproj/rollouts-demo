@@ -31,7 +31,7 @@ jobs:
       - name: report image
         with:
           # Runtime to use for the enrichment.
-          CF_RUNTIME_NAME: 'codefresh-bb'
+          CF_RUNTIME_NAME: 'codefresh-hosted'
 
           # API key for authentication to Codefresh. !! Committing a plain text token is a security risk. We highly recommend using encrypted secrets. !!
           # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
