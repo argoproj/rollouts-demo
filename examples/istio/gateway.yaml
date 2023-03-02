@@ -11,4 +11,4 @@ spec:
       name: http
       protocol: HTTP
     hosts:
-    - "*"
+    - "istio-rollout.platform.loggi.com"

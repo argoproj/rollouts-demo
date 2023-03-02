@@ -14,7 +14,7 @@ spec:
     successCondition: result[0] > 0.90
     provider:
       prometheus:
-        address: http://prometheus.istio-system:9090
+        address: http://prometheus.monitoring:9090
         query: >+
           sum(irate(istio_requests_total{
             reporter="source",
