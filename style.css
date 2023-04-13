@@ -73,7 +73,21 @@ h1 {
 .orange {
   color: #ff823c;
 }
-
+.green {
+  color: #008000;
+}
+.red {
+  color: #ff0000;
+}
+.yellow {
+  color: #ffff00;
+}
+.blue {
+  color: #0000ff;
+}
+.purple {
+  color: #800080
+}
 .white {
   color: white;
 }
