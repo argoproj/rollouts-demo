@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: canary-demo
@@ -8,10 +8,13 @@ metadata:
     ingress.kubernetes.io/app-root: /
 spec:
   rules:
-  - host: canary.dev.argoproj.io
+  - host: argo-rollout.test.ur.se
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: canary-demo
-          servicePort: 80
+          service:
+            name: canary-demo
+            port: 
+              number: 80
