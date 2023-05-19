@@ -8,10 +8,11 @@ metadata:
     ingress.kubernetes.io/app-root: /
 spec:
   rules:
-  - host: argo-rollouts.test.ur.se
+  - host: argo-rollout-preview.test.ur.se
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
           service:
             name: canary-demo-preview
