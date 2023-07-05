@@ -29,11 +29,11 @@ spec:
     canary:
       canaryService: canary-demo-preview
       steps:
-      - setWeight: 20
+      - setWeight: 5
       - pause: {}
-      - setWeight: 40
+      - setWeight: 20
       - pause: {duration: 10}
-      - setWeight: 60
+      - setWeight: 50
       - pause: {duration: 10}
       - setWeight: 80
       - pause: {duration: 10}
