@@ -8,7 +8,7 @@ metadata:
     ingress.kubernetes.io/app-root: /
 spec:
   rules:
-  - host: argo-rollout.test.ur.se
+  - host: argo-rollout.tools.ur.se
     http:
       paths:
       - path: /
