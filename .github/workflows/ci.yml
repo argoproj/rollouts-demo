@@ -1,0 +1,121 @@
+name: Github-action-demo
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
+jobs:
+  build:
+    environment:
+      name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & push the Docker image
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        run: |
+          export VERSION=$(cat service.yaml)
+          export CF_IMAGE=$DOCKERHUB_USERNAME/${{ github.event.repository.name }}:$VERSION
+          echo "CF_IMAGE=$CF_IMAGE" >> $GITHUB_ENV
+          docker build . --file Dockerfile --build-arg COLOR=$VERSION --tag $CF_IMAGE && docker push $CF_IMAGE
+    
+      - name: report image
+        with:
+          # Runtime to use for the enrichment.
+          CF_RUNTIME_NAME: 'codefresh-hosted'
+
+          # API key for authentication to Codefresh. !! Committing a plain text token is a security risk. We highly recommend using encrypted secrets. !!
+          # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
+          CF_API_KEY: ${{secrets.CF2_API_KEY}}
+
+          # Image reported and enriched in Codefresh. Pass the [account-name]/[image-name]:[tag] built in your CI.
+          CF_IMAGE: ${{env.CF_IMAGE}}
+
+          # Container registry integration where the image is stored.
+          CF_CONTAINER_REGISTRY_INTEGRATION: 'docker'
+
+          # Git branch with the commit  Pull Request data to add to the image. Pass the branch from the event payload used to trigger your action.
+          CF_GIT_BRANCH: ${{ github.event.pull_request.head.ref }}
+
+          # GitHub authentication token. !! Committing a plain text token is a security risk. We highly recommend using encrypted secrets. !!
+          # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
+          CF_GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+          # Issue tracking integration to use to enrich the image.
+          CF_JIRA_INTEGRATION: 'jira'
+
+          # Jira project prefix  identifying the ticket number to use.
+          CF_JIRA_PROJECT_PREFIX: 'CR'
+
+          # Search for issue IDs matching this string to associate with your image.
+          CF_JIRA_MESSAGE: ${{ github.event.pull_request.head.ref }}
+        uses: codefresh-io/codefresh-report-image@latest
+     # - name: report image
+      #  with:
+          # Name of runtime to implement the enrichment
+       #   CF_RUNTIME_NAME: 'codefresh-hosted'
+
+          # Codefresh API key !! Committing a plain text token is a security risk. We highly recommend using an encrypted secrets. !!
+          # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
+        #  CF_API_KEY: ${{secrets.CF_API_KEY}}
+
+          # Name of Container registry integration
+         # CF_CONTAINER_REGISTRY_INTEGRATION: 'docker'
+
+          # Name of Jira integration
+          #CF_JIRA_INTEGRATION: 'jira'
+
+          # Image path to enrich
+          #CF_IMAGE: ${{ env.CF_IMAGE }}
+#           CF_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:green
+          # GitHub Access token !! Committing a plain text token is a security risk. We highly recommend using an encrypted secrets. !!
+          # Documentation - https://docs.github.com/en/actions/security-guides/encrypted-secrets
+         # CF_GITHUB_TOKEN: ${{secrets.PAT}}
+
+          # Jira project filter
+          #CF_JIRA_PROJECT_PREFIX: 'CR'
+
+
+#           CF_JIRA_MESSAGE: 'test'
+#           CF_GIT_BRANCH: 'master'
+          # String starting with the issue ID to associate with image
+       #   CF_JIRA_MESSAGE: "${{ github.event.pull_request.head.ref }}"
+       #   CF_GIT_BRANCH: "${{ github.event.pull_request.head.ref }}"
+
+
+    #    uses: codefresh-io/codefresh-report-image@latest
+      
+      - name: Checkout csdp-salesdemo_applications
+        uses: actions/checkout@v3
+        with:
+          repository: idan-codefresh/canary-rollout # change to real repo
+          path: .
+      - name: Update application version
+        run: |
+          IMAGE=${{ env.CF_IMAGE }} yq -i '.spec.template.spec.containers.[0].image = strenv(IMAGE)' canary-rollout.yaml
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.PAT }}
+          commit-message: Update version
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: false
+          branch: update-application-version
+          delete-branch: true
+          title: 'Update application version'
+          body: |
+            Update deployment version
+            - Updated new version for hello-world application
+          labels: |
+            automated pr
+          draft: false

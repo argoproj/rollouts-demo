@@ -10,3 +10,4 @@ spec:
     name: http
   selector:
     app: canary-demo
+  type: LoadBalancer
