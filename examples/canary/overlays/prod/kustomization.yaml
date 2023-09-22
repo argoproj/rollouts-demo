@@ -3,6 +3,9 @@ kind: Kustomization
 bases:
 - ../../base
 resources:
-- canary-rollout.yaml
-- canary-preview-service.yaml
+- canary-ingress.yaml
 - canary-preview-ingress.yaml
+
+images:
+- name: argoproj/rollouts-demo
+  newTag: blue
