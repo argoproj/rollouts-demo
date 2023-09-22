@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+- ../../base
+resources:
+- canary-rollout.yaml
+- canary-preview-service.yaml
+- canary-preview-ingress.yaml
+
+replacements:
+- source:
+    kind: Rollout
+    name: canary-demo
+    fieldPath: metadata.annotations.ingress-url
+  targets:
+  - select:
+      kind: Ingress
+      name: canary-demo
+    fieldPaths:
+    - metadata.annotations.ingress-url
+    - spec.rules.0.host
+- source:
+    kind: Rollout
+    name: canary-demo
+    fieldPath: metadata.annotations.ingress-preview-url
+  targets:
+  - select:
+      kind: Ingress
+      name: canary-demo-preview
+    fieldPaths:
+    - metadata.annotations.ingress-url
+    - spec.rules.0.host
