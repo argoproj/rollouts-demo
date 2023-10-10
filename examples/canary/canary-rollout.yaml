@@ -14,26 +14,26 @@ spec:
         app: canary-demo
     spec:
       containers:
-      - name: canary-demo
-        image: argoproj/rollouts-demo:blue
-        imagePullPolicy: Always
-        ports:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
-        resources:
-          requests:
-            memory: 32Mi
-            cpu: 5m
+        - name: canary-demo
+          image: argoproj/rollouts-demo:green
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              memory: 32Mi
+              cpu: 5m
   strategy:
     canary:
       canaryService: canary-demo-preview
       steps:
-      - setWeight: 20
-      - pause: {}
-      - setWeight: 40
-      - pause: {duration: 10}
-      - setWeight: 60
-      - pause: {duration: 10}
-      - setWeight: 80
-      - pause: {duration: 10}
+        - setWeight: 20
+        - pause: {}
+        - setWeight: 40
+        - pause: { duration: 10 }
+        - setWeight: 60
+        - pause: { duration: 10 }
+        - setWeight: 80
+        - pause: { duration: 10 }
