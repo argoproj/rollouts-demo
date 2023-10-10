@@ -17,3 +17,6 @@ spec:
           image: swr.tr-west-1.myhuaweicloud.com/trc-sdlc/rollouts-demo:master
           ports:
             - containerPort: 8080
+          env:
+          - name: COLOR
+            value: red
