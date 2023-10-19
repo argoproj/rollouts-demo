@@ -15,6 +15,9 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -41,6 +44,37 @@ var (
 	envErrorRate int
 )
 
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func NewResponseWriter(w http.ResponseWriter) *responseWriter {
+	return &responseWriter{w, http.StatusOK}
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
+func prometheusMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("request:", r.RequestURI)
+		path := r.RequestURI
+
+		timer := prometheus.NewTimer(httpDuration.WithLabelValues(path))
+		defer timer.ObserveDuration()
+
+		rw := NewResponseWriter(w)
+		next.ServeHTTP(rw, r)
+
+		statusCode := rw.statusCode
+
+		totalRequests.WithLabelValues(path, strconv.Itoa(statusCode)).Inc()
+	})
+}
+
 func init() {
 	var err error
 	envLatencyStr := os.Getenv("LATENCY")
@@ -57,6 +91,8 @@ func init() {
 			panic(fmt.Sprintf("failed to parse ERROR_RATE: %s", envErrorRateStr))
 		}
 	}
+
+	prometheus.MustRegister(totalRequests)
 }
 
 func main() {
@@ -75,8 +111,16 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	router := http.NewServeMux()
-	router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
-	router.HandleFunc("/color", getColor)
+
+	//router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
+
+	rootHandler := http.StripPrefix("/", http.FileServer(http.Dir("./")))
+	router.Handle("/", prometheusMiddleware(rootHandler))
+
+	colorHandler := http.HandlerFunc(getColor)
+	router.Handle("/color", prometheusMiddleware(colorHandler))
+
+	router.Handle("/metrics", promhttp.Handler())
 
 	server := &http.Server{
 		Addr:    listenAddr,

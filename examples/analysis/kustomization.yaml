@@ -8,3 +8,21 @@ resources:
 - ../canary/canary-ingress.yaml
 - ../canary/canary-preview-service.yaml
 - ../canary/canary-preview-ingress.yaml
+
+
+# Uncomment the following if you need to test analysis without traffic routing
+# Note that the canary service also needs to be added to the prometheus configuration, e.g.,
+# - job_name: rollouts-demo-preview
+#   scheme: http
+#   static_configs:
+#   - targets: ['canary-demo-preview.default.svc.cluster.local:80']
+# - rollout-with-analysis.yaml
+# - analysis-success-rate-local.yaml
+# - canary-demo-service.yaml
+# - canary-demo-preview-service.yaml
+
+# Uncomment the following to kustommize image
+# images:
+# - name: argoproj/rollouts-demo
+#   newName: new-image-name
+#   newTag: blue

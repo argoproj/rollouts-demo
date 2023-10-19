@@ -11,7 +11,8 @@ spec:
   strategy:
     canary:
       analysis:
-        templateName: success-rate
+        templates:
+        - templateName: success-rate-local
         args:
         - name: ingress
           value: canary-demo
