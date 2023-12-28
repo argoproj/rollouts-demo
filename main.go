@@ -37,8 +37,9 @@ var (
 		"blue",
 		"purple",
 	}
-	envLatency   float64
-	envErrorRate int
+	envLatency         float64
+	envErrorRate       int
+	displayHttpHeaders bool
 )
 
 func init() {
@@ -57,6 +58,8 @@ func init() {
 			panic(fmt.Sprintf("failed to parse ERROR_RATE: %s", envErrorRateStr))
 		}
 	}
+	displayHttpHeadersEnv := os.Getenv("DISPLAY_HEADERS")
+	displayHttpHeaders = displayHttpHeadersEnv == "true" || displayHttpHeadersEnv == "1"
 }
 
 func main() {
@@ -187,8 +190,13 @@ func getColor(w http.ResponseWriter, r *http.Request) {
 	} else if envErrorRate > 0 && rand.Intn(100) >= envErrorRate {
 		statusCode = http.StatusInternalServerError
 	}
+	headersLog := ""
+	if displayHttpHeaders {
+		headersLog = fmt.Sprintf(", Headers: %v", r.Header)
+	}
+
 	printColor(colorToReturn, w, statusCode)
-	log.Printf("%d - %s%s\n", statusCode, colorToReturn, delayLengthStr)
+	log.Printf("%d - %s%s%s\n", statusCode, colorToReturn, delayLengthStr, headersLog)
 }
 
 func printColor(colorToPrint string, w http.ResponseWriter, statusCode int) {
