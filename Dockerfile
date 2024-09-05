@@ -3,7 +3,7 @@ WORKDIR /go/src/app
 COPY . .
 RUN make
 
-FROM scratch
+FROM busybox:latest
 COPY *.html ./
 COPY *.png ./
 COPY *.js ./

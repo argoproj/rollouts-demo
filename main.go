@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"runtime"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -61,15 +62,36 @@ func init() {
 
 func main() {
 	var (
-		listenAddr       string
-		terminationDelay int
-		numCPUBurn       string
-		tls              bool
+		err				error
+		listenAddr			string
+		terminationDelay		int
+		numCPUBurn			string
+		terminationDelayEnvValue	string
+		tls				bool
 	)
-	flag.StringVar(&listenAddr, "listen-addr", ":8080", "server listen address")
-	flag.IntVar(&terminationDelay, "termination-delay", defaultTerminationDelay, "termination delay in seconds")
-	flag.StringVar(&numCPUBurn, "cpu-burn", "", "burn specified number of cpus (number or 'all')")
-	flag.BoolVar(&tls, "tls", false, "Enable TLS (with self-signed certificate)")
+	listenAddr = os.Getenv("LISTEN_ADDR")
+	if listenAddr == "" {
+		flag.StringVar(&listenAddr, "listen-addr", ":8080", "server listen address")
+	}
+	terminationDelayEnvValue = os.Getenv("TERMINATION_DELAY")
+	if terminationDelayEnvValue != "" {
+		terminationDelay, err = strconv.Atoi(terminationDelayEnvValue)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to parse TERMINATION_DELAY: %s", terminationDelayEnvValue))
+		}
+	} else {
+		flag.IntVar(&terminationDelay, "termination-delay", defaultTerminationDelay, "termination delay in seconds")
+	}
+	numCPUBurn = os.Getenv("CPU_BURN")
+	if numCPUBurn == "" {
+		flag.StringVar(&numCPUBurn, "cpu-burn", "", "burn specified number of cpus (number or 'all')")
+	}
+	if strings.ToLower(os.Getenv("ENABLE_TLS")) == "true" {
+		tls = true
+	}
+	if !tls {
+		flag.BoolVar(&tls, "tls", false, "Enable TLS (with self-signed certificate)")
+	}
 	flag.Parse()
 
 	rand.Seed(time.Now().UnixNano())
@@ -116,7 +138,6 @@ func main() {
 
 	cpuBurn(done, numCPUBurn)
 	log.Printf("Started server on %s", listenAddr)
-	var err error
 	if tls {
 		err = server.ListenAndServeTLS("", "")
 	} else {
