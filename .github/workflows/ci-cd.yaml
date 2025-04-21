@@ -1,0 +1,53 @@
+name: Build and Push Multi-Arch Rollouts Demo Images
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: rollouts-demo-ambrosia
+  REGISTRY_USER: ambrosiaaaaa
+  REGISTRY: docker.io
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Make build script executable
+        run: chmod +x build-multiarch.sh
+
+      - name: Build and push images
+        run: |
+          SHOULD_PUSH=${{ github.event_name != 'pull_request' && 'true' || 'false' }}
+          IMAGE_PATH="${{ env.REGISTRY_USER }}/${{ env.IMAGE_NAME }}"
+          ./build-multiarch.sh ${{ env.REGISTRY }} $IMAGE_PATH $SHOULD_PUSH
+
+      - name: Check images (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          for TAG in blue green purple yellow; do
+            docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE_NAME }}:$TAG
+          done
