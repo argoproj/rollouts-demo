@@ -65,18 +65,36 @@ func main() {
 		terminationDelay int
 		numCPUBurn       string
 		tls              bool
+		basePath         string
 	)
 	flag.StringVar(&listenAddr, "listen-addr", ":8080", "server listen address")
 	flag.IntVar(&terminationDelay, "termination-delay", defaultTerminationDelay, "termination delay in seconds")
 	flag.StringVar(&numCPUBurn, "cpu-burn", "", "burn specified number of cpus (number or 'all')")
 	flag.BoolVar(&tls, "tls", false, "Enable TLS (with self-signed certificate)")
+	flag.StringVar(&basePath, "base-path", "/", "base path prefix (e.g. /rollout-demo)")
 	flag.Parse()
+
+	if envBasePath := os.Getenv("BASE_PATH"); envBasePath != "" {
+		basePath = envBasePath
+	}
+
+	// Normalize basePath to have leading and trailing slash
+	if basePath == "" {
+		basePath = "/"
+	}
+	if basePath[0] != '/' {
+		basePath = "/" + basePath
+	}
+	if basePath[len(basePath)-1] != '/' {
+		basePath = basePath + "/"
+	}
 
 	rand.Seed(time.Now().UnixNano())
 
 	router := http.NewServeMux()
-	router.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./"))))
-	router.HandleFunc("/color", getColor)
+	fileServer := http.FileServer(http.Dir("./"))
+	router.Handle(basePath, http.StripPrefix(basePath, fileServer))
+	router.HandleFunc(basePath+"color", getColor)
 
 	server := &http.Server{
 		Addr:    listenAddr,
