@@ -90,7 +90,7 @@ func generate(opts CertOptions) ([]byte, crypto.PrivateKey, error) {
 	case "P521":
 		privateKey, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 	default:
-		return nil, nil, fmt.Errorf("Unrecognized elliptic curve: %q", opts.ECDSACurve)
+		return nil, nil, fmt.Errorf("unrecognized elliptic curve: %q", opts.ECDSACurve)
 	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to generate private key: %s", err)
@@ -145,7 +145,7 @@ func generate(opts CertOptions) ([]byte, crypto.PrivateKey, error) {
 
 	certBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey(privateKey), privateKey)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to create certificate: %s", err)
+		return nil, nil, fmt.Errorf("failed to create certificate: %s", err)
 	}
 	return certBytes, privateKey, nil
 }
@@ -222,7 +222,7 @@ func CreateServerTLSConfig(tlsCertPath, tlsKeyPath string, hosts []string) (*tls
 		log.Printf("Loading gRPC TLS configuration from cert=%s and key=%s", tlsCertPath, tlsKeyPath)
 		c, err := tls.LoadX509KeyPair(tlsCertPath, tlsKeyPath)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to initalize gRPC TLS configuration with cert=%s and key=%s: %v", tlsCertPath, tlsKeyPath, err)
+			return nil, fmt.Errorf("unable to initalize gRPC TLS configuration with cert=%s and key=%s: %v", tlsCertPath, tlsKeyPath, err)
 		}
 		cert = &c
 	}
