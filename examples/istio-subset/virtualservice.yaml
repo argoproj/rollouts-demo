@@ -5,9 +5,11 @@ metadata:
 spec:
   gateways:
   - istio-rollout-gateway
+  - mesh
   hosts:
   - istio-rollout.apps.argoproj.io
   - istio-rollout.local
+  - istio-rollout.rollouts-demo-istio.svc.cluster.local
   http:
   - name: primary
     route:
