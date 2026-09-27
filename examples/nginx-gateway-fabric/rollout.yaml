@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: rollouts-demo
+spec:
+  replicas: 5
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: rollouts-demo
+  strategy:
+    canary:
+      analysis:
+        templates:
+          - templateName: success-rate
+        args:
+          - name: namespace
+            value: default
+          - name: service-name
+            value: rollouts-demo-canary-service
+          - name: service-port
+            value: "8080"
+      canaryService: rollouts-demo-canary-service # our created canary service
+      stableService: rollouts-demo-stable-service # our created stable service
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: rollouts-demo-httproute # our created httproute
+            namespace: default # namespace where this rollout resides
+      steps:
+        - setWeight: 30
+        - pause: {}
+        - setWeight: 40
+        - pause:
+            duration: 1m
+        - setWeight: 60
+        - pause:
+            duration: 1m
+        - setWeight: 80
+        - pause:
+            duration: 1m
+  template:
+    metadata:
+      labels:
+        app: rollouts-demo
+    spec:
+      containers:
+        - name: rollouts-demo
+          image: argoproj/rollouts-demo:blue
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              memory: 32Mi
+              cpu: 5m

@@ -18,6 +18,7 @@ The following examples are provided:
 | [Preview Stack Testing](examples/preview-testing) | Rollout which launches an experiment that tests a preview stack (which receives no production traffic) |
 | [Canary with istio (1)](examples/istio) | Rollout which uses host-level traffic splitting during update |
 | [Canary with istio (2)](examples/istio-subset) | Rollout which uses subset-level traffic splitting during update |
+| [Canary Analysis with NGINX Gateway Fabric](examples/nginx-gateway-fabric) | Rollout which performs canary analysis as part of the update. Uses the prometheus metric provider, and requires the [Argo Rollouts Gateway API Plugin](https://rollouts-plugin-trafficrouter-gatewayapi.readthedocs.io/en/latest/) |
 
 Before running an example:
 

@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+spec:
+  args:
+  - name: namespace
+  - name: service-name
+  - name: service-port
+  metrics:
+  - name: success-rate
+    interval: 1m
+    successCondition: len(result) == 0 || result[0] >= 0.99
+    failureLimit: 0
+    provider:
+      prometheus:
+        address: http://prometheus-server.prometheus
+        query: >+
+            sum(rate(
+              nginx_http_upstream_peer_responses_total{nginx_upstream_name="{{args.namespace}}_{{args.service-name}}_{{args.service-port}}", 
+              nginx_status_range!~"[4-5].*"}[1m])
+            ) by (nginx_upstream_name)
+            /
+            sum(rate(
+              nginx_http_upstream_peer_responses_total{nginx_upstream_name="{{args.namespace}}_{{args.service-name}}_{{args.service-port}}"}[1m])
+            ) by (nginx_upstream_name)
+            unless sum(rate(
+              nginx_http_upstream_peer_responses_total{nginx_upstream_name="{{args.namespace}}_{{args.service-name}}_{{args.service-port}}"}[1m])
+            ) by (nginx_upstream_name) == 0
